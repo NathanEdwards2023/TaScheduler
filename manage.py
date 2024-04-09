@@ -5,6 +5,7 @@ import sys
 
 
 def main():
+    #changing line of code
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TaScheduler.settings')
     try:
