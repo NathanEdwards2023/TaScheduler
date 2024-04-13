@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User registration</title>
+</head>
+<body>
+<h1>Create a new account:</h1>
+<form action="/register/" method="post">
+{% csrf_token %}
+    <label for="username">Username:</label>
+    <input id="username" name="username" type="text" required><br><br>
+
+    <label for="password">Password:</label>
+    <input id="password" name="password" type="password" required><br><br>
+    
+    <input type="submit" value="Register">
+</form>
+</body>
+</html>
