@@ -24,4 +24,5 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=True)),
     path('home/', views.home, name='home'),
+    path('courseManagement/', views.courseManagement, name='courseManagement'),
 ]

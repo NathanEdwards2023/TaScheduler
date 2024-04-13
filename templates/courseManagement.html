@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management</title>
+    <style>
+        /*Navigation Menu*/
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            min-width: 1000px;
+        }
+        nav {
+            flex: 1;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        nav ul li {
+            margin-right: 20px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        /*Main Page*/
+        main {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column; 
+            height: calc(100vh - 180px); 
+            min-width: 1000px;
+            min-height: 500px;
+        }
+        .menuContainer {
+            display: flex;
+            justify-content: space-between;
+            height: 100%; 
+        }
+        section {
+            flex: 1; 
+            padding: 10px;
+            margin: 0 10px; 
+            display: flex;
+            flex-direction: column;
+        }
+        .menuTitle {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .menuBox {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 100%;
+            min-height: 450px;
+        }
+        .menuBoxMid {
+            border: 1px solid #ccc;
+            padding: 10px;
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+        .dateContainer {
+            display: flex;
+            align-items: flex-end;
+            flex-direction: column;
+            padding: 10px 20px;
+        }
+        .clock, span {
+            font-weight: bold;
+            margin-left: 10px;
+            padding: 5px 0;
+            text-align: right;
+        }
+        logoutButton {
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="text"],
+        input[type="submit"],
+        select {
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        input[type="submit"],
+        .assignButton {
+            background-color: blue;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        select {
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .assignContainer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-direction: column;
+        }
+        .assignContainer label {
+            margin-bottom: 5px;
+        }
+        .submitButton {
+            background-color: blue;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .scrollingList {
+            overflow-y: auto;
+            height: calc(100% - 270px); /* Adjust height */
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .assignContainer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .assignContainer label,
+        .assignContainer select {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!--Navigation Menu-->
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Notifications</a></li>
+                <li><a href="#">Course Management</a></li>
+                <li><a href="#">Account Management</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="dateContainer">
+            <div class="clock">12:00 PM</div>
+            <span>April 13, 2024</span>
+        </div>
+        <logoutButton>Logout</logoutButton>
+    </header>
+
+    <!--Course Management Menu-->
+    <main>
+        <div class="menuContainer">
+            <section>
+                <h2 class="menuTitle">Create Course</h2>
+                <div class="menuBox">
+                    <form>
+                        <label for="courseName">Course Name:</label><br>
+                        <input type="text" id="courseName" name="courseName"><br>
+                        <label for="courseTime">Course Time:</label><br>
+                        <input type="text" id="courseTime" name="courseTime"><br>
+                        <label for="courseDays">Course Days:</label><br>
+                        <input type="text" id="courseDays" name="courseDays"><br><br>
+                        <input type="submit" value="Submit">
+                    </form>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="menuTitle">Assign Instructor to Course</h2>
+                <div class="menuBoxMid">
+                    <form>
+                        <label for="courseSelect">Select Course:</label><br>
+                        <select id="courseSelect" name="courseSelect">
+                            <option value="course1">Course 1</option>
+                            <option value="course2">Course 2</option>
+                            <option value="course3">Course 3</option>
+                        </select><br>
+                        <label for="instructorSelect">Select Instructor:</label><br>
+                        <select id="instructorSelect" name="instructorSelect">
+                            <option value="instructor1">Instructor 1</option>
+                            <option value="instructor2">Instructor 2</option>
+                            <option value="instructor3">Instructor 3</option>
+                        </select><br><br>
+                        <input type="submit" value="Assign">
+                    </form>
+                </div>
+
+                <h2 class="menuTitle">Assign TA to Course</h2>
+                <div class="menuBoxMid">
+                    <form>
+                        <label for="courseSelectTA">Select Course:</label><br>
+                        <select id="courseSelectTA" name="courseSelectTA">
+                            <option value="course1">Course 1</option>
+                            <option value="course2">Course 2</option>
+                            <option value="course3">Course 3</option>
+                        </select><br>
+                        <label for="taSelect">Select TA:</label><br>
+                        <select id="taSelect" name="taSelect">
+                            <option value="ta1">TA 1</option>
+                            <option value="ta2">TA 2</option>
+                            <option value="ta3">TA 3</option>
+                        </select><br><br>
+                        <input type="submit" value="Assign">
+                    </form>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="menuTitle">Assign TA to Lab Section</h2>
+                <div class="menuBox">
+                    <div class="assignContainer">
+                        <label for="labCourse">Course:</label>
+                        <select id="labCourse" name="labCourse">
+                            <option value="labCourse1">Lab Course 1</option>
+                            <option value="labCourse2">Lab Course 2</option>
+                            <option value="labCourse3">Lab Course 3</option>
+                        </select>
+                        <label for="labTA">TA:</label>
+                        <select id="labTA" name="labTA">
+                            <option value="labTA1">Lab TA 1</option>
+                            <option value="labTA2">Lab TA 2</option>
+                            <option value="labTA3">Lab TA 3</option>
+                        </select>
+                        <label for="labSection">Lab Section:</label>
+                        <select id="labSection" name="labSection">
+                            <option value="labSection1">Lab Section 1</option>
+                            <option value="labSection2">Lab Section 2</option>
+                            <option value="labSection3">Lab Section 3</option>
+                        </select>
+                        <button class="submitButton">Assign</button>
+                    </div>
+                    <div class="scrollingList">
+                        <!--Add TA assignments-->
+                        <ul>
+                            <li>Assigned 1</li>
+                            <li>Assigned 2</li>
+                            <li>Assigned 3</li>
+                            <li>Assigned 4</li>
+                            <li>Assigned 5</li>
+                            <li>Assigned 6</li>
+                            <li>Assigned 7</li>
+                            <li>Assigned 8</li>
+                            <li>Assigned 9</li>
+                            <li>Assigned 10</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>
