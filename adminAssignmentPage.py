@@ -10,8 +10,9 @@ class AdminAssignmentPage:
         # Create a new course
         pass
 
-    def createAccount(self, username, password):
+    def createAccount(self, username, email, password):
         # Create a new user account
+
         pass
 
     def editAccount(self, user_id, email, phone, address, role):
