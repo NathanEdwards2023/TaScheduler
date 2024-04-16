@@ -4,7 +4,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Account</title>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{#  Can comment out this code to remove background  #}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,20 +26,25 @@
 </head>
 <body>
     <div class="login-container">
-        <h1>Create a new account</h1>
-        <form method="post" action="{% url 'createAccount' %}">
+        <h1>WELCOME TO THE TA SCHEDULER</h1>
+        <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <label>
-                <input type="username" name="username" placeholder="Username">
+                <input type="text" name="username" placeholder="Username">
             </label>
-            <br></br>
+{#            <label>#}
+{#                <input type="email" name="email" placeholder="Email">#}
+{#            </label>#}
             <label>
                 <input type="password" name="password" placeholder="Password">
             </label>
-            <br></br>
-            <input type="submit" value="Create Account">
+            <input type="submit" value="Login">
         </form>
-        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{#        <p>Don't have an account? <a href="{% url 'signup' %}">Sign up</a></p>#}
+{# Will need code above soon #}
     </div>
+    
+    
+    
 </body>
 </html>

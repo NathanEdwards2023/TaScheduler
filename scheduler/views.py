@@ -1,7 +1,11 @@
 from django.shortcuts import render
 
-# Create your views here.
-from django.http import HttpResponse
-
 def home(request):
-    return HttpResponse('Welcome to the TA Scheduler!')
+    return render(request, 'home.html')
+
+def courseManagement(request):
+    return render(request, 'courseManagement.html')
+
+def createAccount(request):
+    #Stub method, complete later
+    return render(request, 'createAccount.html')
