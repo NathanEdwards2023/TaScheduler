@@ -26,7 +26,7 @@ class AccountTable(models.Model):
 
 class CourseTable(models.Model):
     # Fields
-    courseName = models.CharField(max_length=30)
+    courseName = models.CharField(max_length=30, unique=True)
 
     # Relationship Fields
     instructorId = models.ForeignKey(

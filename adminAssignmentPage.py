@@ -6,7 +6,7 @@ class AdminAssignmentPage:
         # Display admin assignment details
         pass
 
-    def createCourse(self, course_name):
+    def createCourse(self, course_name, instructorId):
         # Create a new course
         pass
 
