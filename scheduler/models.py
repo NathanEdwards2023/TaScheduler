@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser, User
 from django.db import models
 
 
@@ -10,18 +11,6 @@ class UserTable(models.Model):
     phone = models.CharField(max_length=30, unique=True)
     address = models.CharField(max_length=255)
     userType = models.CharField(max_length=20)
-
-
-class AccountTable(models.Model):
-    # Fields
-    username = models.CharField(max_length=30, unique=True)
-    password = models.CharField(max_length=30)
-
-    # Relationship Fields
-    userID = models.ForeignKey(
-        UserTable,
-        on_delete=models.CASCADE,
-    )
 
 
 class CourseTable(models.Model):

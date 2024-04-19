@@ -1,10 +1,10 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from pip._vendor.requests.models import Response
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, AccountTable
+from .models import CourseTable, UserTable, LabTable
 
 
 def home(request):
@@ -42,7 +42,15 @@ def createAccount(request):
 class AdminAccManagement(View):
     @staticmethod
     def get(request):
-        return render(request, 'adminAccManagement.html')
+        # FIXMe make a get role method this is bad
+        user = request.user
+        accRole = UserTable.objects.get(email=request.user.email).userType
+        if user.is_authenticated and accRole == 'admin':
+            return render(request, 'adminAccManagement.html')
+        else:
+
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('/home.html')
 
     @staticmethod
     def post(request):
@@ -50,6 +58,7 @@ class AdminAccManagement(View):
             if 'deleteAccBtn' in request.POST:
                 username = request.POST.get('deleteAccountName')
                 email = request.POST.get('deleteAccountEmail')
+
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
                 accDeleted = adminPage.deleteAccount(username=username, email=email)
                 if accDeleted:

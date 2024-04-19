@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from scheduler.models import UserTable, AccountTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable
 
 
 class AdminAssignmentPage:
@@ -29,7 +30,7 @@ class AdminAssignmentPage:
         try:
             # Get the user account based on username and email
             user = UserTable.objects.get(email=email)
-            account = AccountTable.objects.get(username=username)
+            account = User.objects.get(username=username)
 
             # Delete children
             if user.userType == "TA":
@@ -37,11 +38,11 @@ class AdminAssignmentPage:
             elif user.userType == "Instructor":
                 CourseTable.objects.filter(instructorId=user.id).delete()
 
-            # Delete the account
-            account.delete()
             # Finally delete user...
             user.delete()
 
+            # Delete the account
+            account.delete()
             return True
         except ObjectDoesNotExist:
             return False
@@ -56,4 +57,8 @@ class AdminAssignmentPage:
 
     def assignTAToLab(self, lab_id, user_id):
         # Assign a TA to a lab
+        pass
+
+    def getRole(self, email):
+        # get the accs role
         pass
