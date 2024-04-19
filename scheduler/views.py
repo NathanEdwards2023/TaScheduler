@@ -28,3 +28,6 @@ def createCourse(request):
 def createAccount(request):
     #Stub method, complete later
     return render(request, 'createAccount.html')
+
+def adminAccManagement(request):
+    return render(request, 'adminAccManagement.html')
