@@ -78,6 +78,7 @@ class TestEditAccount(unittest.TestCase):
 
 
 class TestDeleteAccount(unittest.TestCase):
+    # FIXME this unit test needs some correcting
     def setUp(self):
         self.app = AdminAssignmentPage()
         #user 1
