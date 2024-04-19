@@ -19,7 +19,7 @@ class AdminAssignmentPage:
         # Edit an existing user account
         pass
 
-    def deleteAccount(self, user_id):
+    def deleteAccount(self, username, email):
         # Delete an existing user account
         pass
 
