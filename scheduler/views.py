@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
+from django.contrib import messages
 from pip._vendor.requests.models import Response
 
 import adminAssignmentPage
@@ -29,7 +30,12 @@ def createCourse(request):
 
         # Create a new CourseTable object
         admin_page = adminAssignmentPage.AdminAssignmentPage()
-        admin_page.createCourse(courseName, instructor)
+        courseCreated = admin_page.createCourse(courseName, instructor)
+
+        if courseCreated:
+            messages.success(request, 'Course created successfully.')
+        else:
+            messages.error(request, 'Failed to create course.')
 
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')

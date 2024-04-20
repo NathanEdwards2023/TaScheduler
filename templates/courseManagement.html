@@ -54,6 +54,13 @@
                         </select><br><br>
                         <input type="submit" value="Submit">
                     </form>
+                    {% if messages %}
+                        <ul class="messages">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
             </section>
         <!--assign to course-->

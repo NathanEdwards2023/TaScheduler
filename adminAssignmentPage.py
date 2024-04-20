@@ -14,9 +14,12 @@ class AdminAssignmentPage:
 
     def createCourse(self, courseName, instructorId):
         # Create a new course
-        newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
-        newCourse.save()
-        pass
+        if CourseTable.objects.filter(courseName=courseName).exists():
+            return False
+        else:
+            newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
+            newCourse.save()
+            return True
 
     def createAccount(self, username, email, password):
         # Create a new user account
