@@ -12,8 +12,10 @@ class AdminAssignmentPage:
         # Display admin assignment details
         pass
 
-    def createCourse(self, course_name, instructorId):
+    def createCourse(self, courseName, instructorId):
         # Create a new course
+        newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
+        newCourse.save()
         pass
 
     def createAccount(self, username, email, password):

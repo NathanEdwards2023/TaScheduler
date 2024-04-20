@@ -25,14 +25,14 @@ def createCourse(request):
         courseName = request.POST.get('courseName')
         courseTime = request.POST.get('courseTime')
         courseDays = request.POST.get('courseDays')
+        instructor = request.POST.get('instructorSelect')
 
         # Create a new CourseTable object
-        newCourse = CourseTable(courseName=courseName)
-        newCourse.save()
+        admin_page = adminAssignmentPage.AdminAssignmentPage()
+        admin_page.createCourse(courseName, instructor)
 
-        return courseManagement(request)
-        # return HttpResponse('Course created successfully')
-
+        return redirect('courseManagement')
+    return render(request, 'courseManagement.html')
 
 def createAccount(request):
     # Stub method, complete later
