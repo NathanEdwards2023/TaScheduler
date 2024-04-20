@@ -52,28 +52,40 @@
             <div class="menuBoxMid">
                 <form method="post" action="{% url 'adminAccManagement' %}">
                     {% csrf_token %}
-                    <label for="DeleteAccountName">Enter Account Name:</label><br>
-                    <input type="text" id="DeleteAccountName" name="DeleteAccountName"><br>
-                    <label for="DeleteAccountEmail">Enter Account Email:</label><br>
-                    <input type="text" id="DeleteAccountEmail" name="DeleteAccountEmail"><br>
-                    <input type="submit" value="Delete Account">
+                    <label for="deleteAccountName">Enter Account Name:</label><br>
+                    <input type="text" id="deleteAccountName" name="deleteAccountName"><br>
+                    <label for="deleteAccountEmail">Enter Account Email:</label><br>
+                    <input type="text" id="deleteAccountEmail" name="deleteAccountEmail"><br>
+                    <input type="submit" name="deleteAccBtn" value="Delete Account">
                 </form>
             </div>
+            {% if message %}
+                <div class="accountDeletedMsg">
+                    <span class="closeAccDeletedBtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                    <p>{{ message }}</p>
+                </div>
+            {% endif %}
+
+            <script>
+                function closeMessage() {
+                    document.querySelector('.accountDeletedMsg').style.display = 'none';
+                }
+            </script>
         </section>
         <!--edit account-->
         <section>
-            <h2 class="menuTitle">Create An Account</h2>
+            <h2 class="menuTitle">Edit An Account</h2>
             <div class="menuBox">
                 <form method="post" action="{% url 'adminAccManagement' %}">
                     {% csrf_token %}
-                    <label for="EditAccountName">Enter Account Name:</label><br>
-                    <input type="text" id="EditAccountName" name="EditAccountName"><br>
-                    <label for="EditAccountEmail">Edit Email:</label><br>
-                    <input type="text" id="EditAccountEmail" name="EditAccountEmail"><br>
-                    <label for="EditAccountPassword">Edit Password:</label><br>
-                    <input type="text" id="EditAccountPassword" name="EditAccountPassword"><br><br>
-                    <label for="EditAccountName">Edit Account Name:</label><br>
-                    <input type="text" id="EditAccountName" name="EditAccountName"><br><br>
+                    <label for="editAccountName">Enter Account Name:</label><br>
+                    <input type="text" id="editAccountName" name="editAccountName"><br>
+                    <label for="editAccountEmail">Edit Email:</label><br>
+                    <input type="text" id="editAccountEmail" name="editAccountEmail"><br>
+                    <label for="editAccountPassword">Edit Password:</label><br>
+                    <input type="text" id="editAccountPassword" name="editAccountPassword"><br><br>
+                    <label for="editAccountName">Edit Account Name:</label><br>
+                    <input type="text" id="editAccountName" name="editAccountName"><br><br>
                     <label htmlFor="accountRole">Change Account Role</label>
                     <select id="accountRole" value="accountRole">
                         <option value="ta">TA</option>

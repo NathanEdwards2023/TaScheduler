@@ -1,3 +1,9 @@
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+
+from scheduler.models import UserTable, CourseTable, LabTable
+
+
 class AdminAssignmentPage:
     def __init__(self):
         pass
@@ -19,9 +25,27 @@ class AdminAssignmentPage:
         # Edit an existing user account
         pass
 
-    def deleteAccount(self, username, email):
-        # Delete an existing user account
-        pass
+    @staticmethod
+    def deleteAccount(username, email):
+        try:
+            # Get the user account based on username and email
+            user = UserTable.objects.get(email=email)
+            account = User.objects.get(username=username)
+
+            # Delete children
+            if user.userType == "TA":
+                LabTable.objects.filter(taId=user.id).delete()
+            elif user.userType == "Instructor":
+                CourseTable.objects.filter(instructorId=user.id).delete()
+
+            # Finally delete user...
+            user.delete()
+
+            # Delete the account
+            account.delete()
+            return True
+        except ObjectDoesNotExist:
+            return False
 
     def assignInstructorToCourse(self, course_id, user_id):
         # Assign an instructor to a course
@@ -33,4 +57,8 @@ class AdminAssignmentPage:
 
     def assignTAToLab(self, lab_id, user_id):
         # Assign a TA to a lab
+        pass
+
+    def getRole(self, email):
+        # get the accs role
         pass
