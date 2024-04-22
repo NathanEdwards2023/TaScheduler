@@ -19,10 +19,13 @@ from django.urls import path, include
 from scheduler import views
 from django.views.generic.base import RedirectView
 
+from scheduler.views import AdminAccManagement
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=True)),
     path('home/', views.home, name='home'),
     path('courseManagement/', views.courseManagement, name='courseManagement'),
+    path('adminAccManagement/', AdminAccManagement.as_view(), name='adminAccManagement'),
 ]
