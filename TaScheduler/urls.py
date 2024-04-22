@@ -27,6 +27,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/accounts/login/', permanent=True)),
     path('home/', views.home, name='home'),
     path('courseManagement/', views.courseManagement, name='courseManagement'),
-    path('createCourse/', views.createCourse, name='createCourse'),
     path('adminAccManagement/', AdminAccManagement.as_view(), name='adminAccManagement'),
 ]

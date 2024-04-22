@@ -16,22 +16,28 @@ def courseManagement(request):
     TAs = UserTable.objects.filter(userType="TA")
     instructors = UserTable.objects.filter(userType="Instructor")
     labs = LabTable.objects.all()
-    return render(request, 'courseManagement.html',
-                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
 
+    if request.method == 'GET':
+        return render(request, 'courseManagement.html',
+                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+    else:
+        if request.method == 'POST':
+            courseName = request.POST.get('courseName')
+            courseTime = request.POST.get('courseTime')
+            courseDays = request.POST.get('courseDays')
+            instructor = request.POST.get('instructorSelect')
 
-def createCourse(request):
-    if request.method == 'POST':
-        courseName = request.POST.get('courseName')
-        courseTime = request.POST.get('courseTime')
-        courseDays = request.POST.get('courseDays')
+            # Create a new CourseTable object
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            courseCreated = admin_page.createCourse(courseName, instructor)
 
-        # Create a new CourseTable object
-        newCourse = CourseTable(courseName=courseName)
-        newCourse.save()
+            if courseCreated:
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+            else:
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course failed to be created"})
 
-        return courseManagement(request)
-        # return HttpResponse('Course created successfully')
+            return redirect('courseManagement')
+        return render(request, 'courseManagement.html')
 
 
 def createAccount(request):

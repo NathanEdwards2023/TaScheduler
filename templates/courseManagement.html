@@ -12,11 +12,11 @@
     <header>
         <nav>
             <ul>
-                <li><a href="#">Home</a></li>
+                <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="#">Profile</a></li>
                 <li><a href="#">Notifications</a></li>
-                <li><a href="#">Course Management</a></li>
-                <li><a href="#">Account Management</a></li>
+                <li><a href="{% url 'courseManagement' %}">Course Management</a></li>
+                <li><a href="{% url 'adminAccManagement' %}">Account Management</a></li>
                 <li><a href="#">Settings</a></li>
             </ul>
         </nav>
@@ -34,7 +34,7 @@
             <section>
                 <h2 class="menuTitle">Create Course</h2>
                 <div class="menuBox">
-                    <form method="post" action="{% url 'createCourse' %}">
+                    <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
                         <label for="courseName">Course Name:</label><br>
                         <input type="text" id="courseName" name="courseName"><br>
@@ -42,8 +42,21 @@
                         <input type="text" id="courseTime" name="courseTime"><br>
                         <label for="courseDays">Course Days:</label><br>
                         <input type="text" id="courseDays" name="courseDays"><br><br>
+                        <label for="instructorSelect">Select Instructor:</label><br>
+                        <select id="instructorSelect" name="instructorSelect">
+                            {% if instructors %}
+                                {% for instructor in instructors %}
+                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No instructors available</option>
+                            {% endif %}
+                        </select><br><br>
                         <input type="submit" value="Submit">
                     </form>
+                    {% if messages %}
+                        {{ messages }}
+                    {% endif %}
                 </div>
             </section>
         <!--assign to course-->
@@ -140,18 +153,19 @@
                         <button class="submitButton">Assign</button>
                     </div>
                     <div class="scrollingList">
-                        <!--Add TA assignments-->
+                        <!--TA assignments-->
                         <ul>
-                            <li>Assigned 1</li>
-                            <li>Assigned 2</li>
-                            <li>Assigned 3</li>
-                            <li>Assigned 4</li>
-                            <li>Assigned 5</li>
-                            <li>Assigned 6</li>
-                            <li>Assigned 7</li>
-                            <li>Assigned 8</li>
-                            <li>Assigned 9</li>
-                            <li>Assigned 10</li>
+                            {% for lab in labs %}
+                                {% with labTA=lab.taId %}
+                                    <li>{{ labTA.firstName }} {{ labTA.lastName }}
+                                        <ul>
+                                            <li>Course: {{ lab.courseId.courseName }} Lab Section: {{ lab.sectionNumber }}</li>
+                                        </ul>
+                                    </li>
+                                {% endwith %}
+                            {% empty %}
+                                <li>No Assignments</li>
+                            {% endfor %}
                         </ul>
                     </div>
                 </div>
