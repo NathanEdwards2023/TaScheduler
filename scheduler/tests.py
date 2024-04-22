@@ -3,7 +3,7 @@ import unittest
 from django.contrib.auth.models import User
 
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import AccountTable, UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -47,7 +47,7 @@ class TestCreateCourse(TestCase):
         self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = AccountTable(username="matt", password="e121dfa91w", email=self.user1.email)
+        self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
         self.user1Account.save()
 
     def tearDown(self):
@@ -105,7 +105,7 @@ class TestEditAccount(TestCase):
         user = UserTable(firstName="John", lastName="Doe", email="email@gmail.com", phone="262-724-8212",
                          address="some address", userType="Instructor")
         user.save()
-        userAccount = AccountTable(username="johnD", password="password123", userId=user.email)
+        userAccount = User(username="johnD", password="password123", userId=user.email)
         userAccount.save()
 
     def test_editAccount(self):
@@ -127,13 +127,13 @@ class TestDeleteAccount(TestCase):
         self.user1 = UserTable(firstName="John", lastName="Doe", email="John@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = AccountTable(username="john", email=self.user1.email,  password="password123")
+        self.user1Account = User(username="john", email=self.user1.email,  password="password123")
         self.user1Account.save()
         #user 2
         self.user2 = UserTable(firstName="Jeff", lastName="Doe", email="Jeff@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user2.save()
-        self.user2Account = AccountTable(username="jeff", email=self.user2.email, password="password123")
+        self.user2Account = User(username="jeff", email=self.user2.email, password="password123")
         self.user2Account.save()
 
     def test_deleteAccount(self):

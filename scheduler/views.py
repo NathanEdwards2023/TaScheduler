@@ -4,7 +4,7 @@ from django.views import View
 from pip._vendor.requests.models import Response
 
 import adminAssignmentPage
-from .models import AccountTable, CourseTable, UserTable, LabTable
+from .models import CourseTable, UserTable, LabTable
 
 
 def home(request):
