@@ -5,22 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Account</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-image: url('{% static "images/wallpaperflare.com_wallpaper.jpg" %}');
-            background-color: #f7f7f7;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/createAccount.css' %}">
 </head>
 <body>
     <div class="login-container">
@@ -28,13 +13,11 @@
         <form method="post" action="{% url 'createAccount' %}">
             {% csrf_token %}
             <label>
-                <input type="username" name="username" placeholder="Username">
+                <input type="text" name="username" placeholder="Username">
             </label>
-            <br></br>
             <label>
                 <input type="password" name="password" placeholder="Password">
             </label>
-            <br></br>
             <input type="submit" value="Create Account">
         </form>
         <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>

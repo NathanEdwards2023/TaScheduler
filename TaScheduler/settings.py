@@ -33,6 +33,8 @@ LOGIN_REDIRECT_URL = '/home/'
 
 # Application definition
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
