@@ -3,7 +3,7 @@ import unittest
 from django.contrib.auth.models import User
 
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, AccountTable
 
 
 class TestCreateCourse(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestCreateCourse(unittest.TestCase):
         self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
+        self.user1Account = AccountTable(username="matt", password="e121dfa91w", email=self.user1.email)
         self.user1Account.save()
 
     def tearDown(self):
@@ -70,7 +70,7 @@ class TestEditAccount(unittest.TestCase):
         user = UserTable(firstName="John", lastName="Doe", email="email@gmail.com", phone="262-724-8212",
                          address="some address", userType="Instructor")
         user.save()
-        userAccount = User(username="johnD", password="password123", userId=user.email)
+        userAccount = AccountTable(username="johnD", password="password123", userId=user.email)
         userAccount.save()
 
     def test_editAccount(self):
@@ -92,39 +92,44 @@ class TestDeleteAccount(unittest.TestCase):
         self.user1 = UserTable(firstName="John", lastName="Doe", email="John@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="john", password="password123", userId=self.user1.email)
+        self.user1Account = AccountTable(username="john", email=self.user1.email,  password="password123")
         self.user1Account.save()
         #user 2
         self.user2 = UserTable(firstName="Jeff", lastName="Doe", email="Jeff@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user2.save()
-        self.user2Account = User(username="jeff", password="password123", userId=self.user2.email)
+        self.user2Account = AccountTable(username="jeff", email=self.user2.email, password="password123")
         self.user2Account.save()
 
     def test_deleteAccount(self):
         result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
         self.assertEqual(True, result)
 
-    def test_deleteAccountInvalidID(self):
-        self.app.createAccount("testuser", "testuser@example.com", "password")
-        result = self.app.deleteAccount(user_id=1, email=self.user1.email)
+    def test_deleteAccountInvalidAccount(self):
+        result = self.app.deleteAccount(username="Joe", email="Joe@email.com")
+        self.assertEqual(False, result)
+
+    def test_deleteAccountEmptyArguments(self):
+        result = self.app.deleteAccount(username="", email="")
+        self.assertEqual(False, result)
+
+    def test_deleteAccountWrongEmail(self):
+        result = self.app.deleteAccount(self.user1Account.username, self.user2.email)
         self.assertEqual(False, result)
 
     def test_deleteTwoAccount(self):
-        self.app.createAccount("testuser", "testuser@example.com", "password")
-        self.app.deleteAccount(user_id=0, email=self.user1.email)
-        self.app.createAccount("testuser2", "testuser2@example.com", "password2")
-        result = self.app.deleteAccount(user_id=1, email=self.user1.email)
-        self.assertEqual(True, result)
+        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
+        result2 = self.app.deleteAccount(self.user2Account.username, self.user2.email)
+        self.assertEqual(True, result, result2)
 
     def test_invalidArg(self):
-        self.app.createAccount("testuser", "testuser@example.com", "password")
         with self.assertRaises(TypeError):
-            self.app.deleteAccount(user_id="Zero", email=self.user1.email)
+            self.app.deleteAccount(1, self.user1.email)
 
-    def test_noAccountsLeft(self):
-        with self.assertRaises(ValueError):
-            self.app.deleteAccount(user_id=0, email=self.user1.email)
+    def test_deleteSameAccountTwice(self):
+        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
+        result2 = self.app.deleteAccount(self.user1Account.username, self.user1.email)
+        self.assertEqual(False, result2)
 
 
 if __name__ == '__main__':

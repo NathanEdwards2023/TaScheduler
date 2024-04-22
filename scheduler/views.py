@@ -41,7 +41,17 @@ def courseManagement(request):
 
 
 def createAccount(request):
-    # Stub method, complete later
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        adminPage = adminAssignmentPage.AdminAssignmentPage()
+        accountCreated = adminPage.createAccount(username=username, email=email, password=password)
+        if accountCreated:
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+        else:
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+
     return render(request, 'createAccount.html')
 
 

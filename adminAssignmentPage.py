@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import AccountTable, UserTable, CourseTable, LabTable
 
 
 class AdminAssignmentPage:
@@ -22,9 +22,15 @@ class AdminAssignmentPage:
             return True
 
     def createAccount(self, username, email, password):
-        # Create a new user account
+        if AccountTable.objects.filter(email=email).exists():
+            return False
+        else:
+            newAccount = AccountTable(sername=username, email=email, password=password)
+            newUser = UserTable(email=email)
+            newAccount.save()
+            newUser.save()
+            return True
 
-        pass
 
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account
@@ -35,7 +41,7 @@ class AdminAssignmentPage:
         try:
             # Get the user account based on username and email
             user = UserTable.objects.get(email=email)
-            account = User.objects.get(username=username)
+            account = AccountTable.objects.get(username=username)
 
             # Delete children
             if user.userType == "TA":
