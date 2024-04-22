@@ -48,7 +48,7 @@ def createAccount(request):
 class AdminAccManagement(View):
     @staticmethod
     def get(request):
-        # FIXMe make a get role method this is bad
+
         user = request.user
         accRole = UserTable.objects.get(email=request.user.email).userType
         if user.is_authenticated and accRole == 'admin':
@@ -56,7 +56,7 @@ class AdminAccManagement(View):
         else:
 
             # Redirect non-admin users to another page (e.g., home page)
-            return redirect('/home.html')
+            return redirect('home')
 
     @staticmethod
     def post(request):
