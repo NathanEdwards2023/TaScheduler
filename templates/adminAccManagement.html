@@ -24,7 +24,10 @@
         <div class="clock">12:00 PM</div>
         <span>April 13, 2024</span>
     </div>
-    <logoutButton>Logout</logoutButton>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
 </header>
 
 <!--Admin Account Management Menu-->
