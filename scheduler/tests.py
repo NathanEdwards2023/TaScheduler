@@ -106,11 +106,19 @@ class TestDeleteAccount(unittest.TestCase):
         self.assertEqual(True, result)
 
     def test_deleteAccountInvalidAccount(self):
-        result = self.app.deleteAccount(username="Joe", email="Joe@email.com")
+        result = self.app.deleteAccount("Joe", "Joe@email.com")
         self.assertEqual(False, result)
 
     def test_deleteAccountEmptyArguments(self):
-        result = self.app.deleteAccount(username="", email="")
+        result = self.app.deleteAccount("", "")
+        self.assertEqual(False, result)
+
+    def test_deleteAccountEmptyUsername(self):
+        result = self.app.deleteAccount("", self.user1.email)
+        self.assertEqual(False, result)
+
+    def test_deleteAccountEmptyEmail(self):
+        result = self.app.deleteAccount(self.user1Account.username, "")
         self.assertEqual(False, result)
 
     def test_deleteAccountWrongEmail(self):
