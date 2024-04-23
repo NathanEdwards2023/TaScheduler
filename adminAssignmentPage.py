@@ -52,8 +52,7 @@ class AdminAssignmentPage:
         # Edit an existing user account
         pass
 
-
-
+    @staticmethod
     def deleteAccount(username, email):
         try:
             # Get the user account based on username and email
