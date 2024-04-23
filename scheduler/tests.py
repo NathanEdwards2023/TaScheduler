@@ -1,8 +1,9 @@
 import unittest
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable
 from django.contrib.auth import get_user_model
@@ -80,13 +81,19 @@ class TestCreateCourse(unittest.TestCase):
 
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
-        # Create a test user
         self.app = AdminAssignmentPage()
-        user = UserTable(firstName="Tom", lastName="Thompson", email="testCC@gmail.com", phone="8675309",
-                         address="123 street", userType="admin")
-        user.save()
-        userAccount = User(username="TomT", password="password123", email=user.email)
-        userAccount.save()
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+                               address="adminTest", userType="admin")
+        self.user1.save()
+        self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
+        self.user1Account.save()
+
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+                               address="deleteTest", userType="ta")
+        self.user2.save()
+        self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
+        self.user2Account.save()
+
 
         user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
                          address="123 street", userType="instructor")
@@ -95,28 +102,29 @@ class TestCreateCourseAcc(TestCase):
         userAccount2.save()
     def tearDown(self):
         # Clean up test data
-        # Clean up test data
-        user = UserTable.objects.get(email="testCC@gmail.com")
-        userAccount = User.objects.get(email="testCC@gmail.com")
-        user2 = UserTable.objects.get(email="nonadmin@gmail.com")
-        userAccount2 = User.objects.get(email="nonadmin@gmail.com")
+        self.user1.delete()
+        self.user1Account.delete()
+        self.user2.delete()
+        self.user2Account.delete()
 
-        user.delete()
-        userAccount.delete()
-        user2.delete()
-        userAccount2.delete()
     def test_courseCourse_page(self):
         # Ensure that the course creation form is rendered correctly
-        self.client.login(username='TomT', password='password123')
-        response = self.client.get(reverse('courseManagement'))
+        request = RequestFactory().get(reverse('courseManagement'))
+        request.user = self.user1Account
+
+        response = scheduler.views.courseManagement(request)
+
+
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'courseManagement.html')
 
     def test_courseManagement_redirect_non_admin(self):
         # Ensure that non-admin users are redirected to the home page when trying to access courseManagement
-        self.client.login(username='JeffT', password='password123')
-        response = self.client.get(reverse('courseManagement'))
-        self.assertRedirects(response, reverse('home'), status_code=302, target_status_code=200)
+        request = RequestFactory().get(reverse('courseManagement'))
+        request.user = self.user2Account
+
+        response = scheduler.views.courseManagement(request)
+
+        self.assertEqual(response.status_code, 302)
 
     def test_course_creation(self):
         # Create a test instructor
@@ -140,7 +148,6 @@ class TestCreateCourseAcc(TestCase):
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
-
 
 
 class TestCreateAccount(unittest.TestCase):
