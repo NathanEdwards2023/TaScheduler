@@ -107,7 +107,6 @@ class TestCreateCourseAcc(TestCase):
         data = {
             'courseName': 'New Course',
             'instructorSelect': instructor.id,
-            # Add other required form fields
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on success
@@ -118,10 +117,9 @@ class TestCreateCourseAcc(TestCase):
         data = {
             'courseName': '',  # Invalid empty course name
             'instructorSelect': 9999,  # Invalid instructor ID
-            # Add other required form fields
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on failure
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
