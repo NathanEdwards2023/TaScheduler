@@ -22,9 +22,18 @@ class AdminAssignmentPage:
             return True
 
     def createAccount(self, username, email, password):
-        # Create a new user account
+        # Create a new account
+        if len(password) < 8:
+            return False
+        if User.objects.filter(email=email).exists():
+            return False
+        else:
+            newAccount = User(username=username, email=email, password=password)
+            newUser = UserTable(email=email)
+            newAccount.save()
+            newUser.save()
+            return True
 
-        pass
 
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account

@@ -34,6 +34,7 @@ body {
 }
 
 .createAccount-container input[type="text"],
+.createAccount-container input[type="email"],
 .createAccount-container input[type="password"],
 
 .createAccount-container input[type="submit"] {
