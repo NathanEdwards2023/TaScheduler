@@ -159,7 +159,7 @@ class TestCreateAccount(unittest.TestCase):
 
     def test_createAccountSuccess(self):
         result = self.app.createAccount('user', 'testuser@example.com', 'password')
-        self.assertIsNone(result)
+        self.assertTrue(result)
 
     def test_createAccountEmptyUsername(self):
         with self.assertRaises(ValueError):
@@ -180,7 +180,32 @@ class TestCreateAccount(unittest.TestCase):
             self.assertIn("User already exists", str(context.exception))
 
 
-class TestEditAccount(unittest.TestCase):
+class CreateAccountTestCase(TestCase):
+    def setUp(self):
+        self.createAccount_url = reverse('createAccount')
+        self.home_url = reverse('login')
+
+    def tearDown(self):
+        User.objects.filter(username='testuser', email='test@user.com').delete()
+        UserTable.objects.filter(email='test@user.com').delete()
+
+    def test_createAccount_success(self):
+        response = self.client.post(self.createAccount_url,
+                                    {'username': 'testuser', 'email': 'test@user.com', 'password': 'password'},
+                                    follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(username='testuser', email='test@user.com', password='password').exists())
+
+    def test_createAccount_failure(self):
+        with self.assertRaises(ValueError) as context:
+            self.client.post(self.createAccount_url,
+                             {'username': '', 'email': 'preExister@test.com', 'password': 'wordToPass'},
+                             follow=True)
+        self.assertEqual(str(context.exception), "Username cannot be empty")
+        self.assertFalse(User.objects.filter(email='preExister@test.com').exists())
+
+
+class TestEditAccount(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         user = UserTable(firstName="John", lastName="Doe", email="email@gmail.com", phone="262-724-8212",
@@ -200,15 +225,14 @@ class TestEditAccount(unittest.TestCase):
                           self.app.editAccount(5, "newemail@uwm.com", "1234567890", "123 street", "TA"))
 
 
-class TestDeleteAccount(unittest.TestCase):
-    # FIXME this unit test needs some correcting
+class TestDeleteAccount(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         #user 1
         self.user1 = UserTable(firstName="John", lastName="Doe", email="John@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="john", email=self.user1.email,  password="password123")
+        self.user1Account = User(username="john", email=self.user1.email, password="password123")
         self.user1Account.save()
         #user 2
         self.user2 = UserTable(firstName="Jeff", lastName="Doe", email="Jeff@gmail.com", phone="262-724-8212",

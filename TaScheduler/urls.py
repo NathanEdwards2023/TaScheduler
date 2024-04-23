@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=True)),
+    path('createAccount/', views.createAccount, name='createAccount'),
     path('home/', views.home, name='home'),
     path('courseManagement/', views.courseManagement, name='courseManagement'),
     path('logout/', auth_views.LogoutView.as_view(next_page=reverse_lazy('login')), name='logout'),

@@ -1,7 +1,7 @@
-body {
+.body {
     font-family: Arial, sans-serif;
     /*Remove if needed1*/
-    background-image: url('static/images/wallpaperflare.com_wallpaper.jpg');
+    background-image: url('static/images/university-of-wisconsin-milwaukee.jpg');
     background-color: #f7f7f7;
     background-size: cover;
     background-position: center;
@@ -34,8 +34,15 @@ body {
 }
 
 .createAccount-container input[type="text"],
-.createAccount-container input[type="email"],
 .createAccount-container input[type="password"],
+.createAccount-container input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 
 .createAccount-container input[type="submit"] {
     width: 100%;

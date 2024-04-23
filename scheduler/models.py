@@ -8,7 +8,7 @@ class UserTable(models.Model):
     firstName = models.CharField(max_length=30)
     lastName = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=30, unique=True)
+    phone = models.CharField(max_length=30)
     address = models.CharField(max_length=255)
     userType = models.CharField(max_length=20)
 

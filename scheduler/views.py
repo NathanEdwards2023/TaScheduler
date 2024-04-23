@@ -90,7 +90,8 @@ class AdminAccManagement(View):
                 username = request.POST.get('createAccountName')
                 email = request.POST.get('createAccountEmail')
                 password = request.POST.get('createAccountPassword')
-                accCreated = True
+                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                accCreated = adminPage.createAccount(username=username, email=email, password=password)
                 if accCreated:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
                 else:
