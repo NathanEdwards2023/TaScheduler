@@ -71,3 +71,7 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'message': "Account deleted successfully"})
                 else:
                     return render(request, 'adminAccManagement.html', {'message': "Failed to delete account"})
+            if 'createAccBtn' in request.POST:
+                username = request.POST.get('createAccountName')
+                email = request.POST.get('createAccountEmail')
+                password = request.POST.get('createAccountPassword')
