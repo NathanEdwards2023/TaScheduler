@@ -23,7 +23,10 @@
             <div class="clock">12:00 PM</div>
             <span>April 13, 2024</span>
         </div>
-        <logoutButton>Logout</logoutButton>
+        <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
     </header>
     <h1>Welcome to the Homepage!</h1>
     <p>This is the protected homepage that requires login.</p>
