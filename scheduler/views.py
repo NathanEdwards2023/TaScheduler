@@ -18,8 +18,15 @@ def courseManagement(request):
     labs = LabTable.objects.all()
 
     if request.method == 'GET':
-        return render(request, 'courseManagement.html',
-                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+        user = request.user
+        accRole = UserTable.objects.get(email=request.user.email).userType
+        if user.is_authenticated and accRole == 'admin':
+            return render(request, 'courseManagement.html',
+                          {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+        else:
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('home')
+
     else:
         if request.method == 'POST':
             courseName = request.POST.get('courseName')

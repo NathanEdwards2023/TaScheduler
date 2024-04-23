@@ -1,10 +1,10 @@
 import unittest
 
-import django
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable
 from django.contrib.auth import get_user_model
@@ -84,18 +84,50 @@ class TestCreateCourse(unittest.TestCase):
 
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
-        # Create a test user
-        self.user = User.objects.create_user(username='testuserCC', email='testCC@example.com', password='password')
+        self.app = AdminAssignmentPage()
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+                               address="adminTest", userType="admin")
+        self.user1.save()
+        self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
+        self.user1Account.save()
 
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+                               address="deleteTest", userType="ta")
+        self.user2.save()
+        self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
+        self.user2Account.save()
+
+
+        user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
+                         address="123 street", userType="instructor")
+        user2.save()
+        userAccount2 = User(username="JeffT", password="password123", email=user2.email)
+        userAccount2.save()
     def tearDown(self):
         # Clean up test data
-        self.user.delete()
+        self.user1.delete()
+        self.user1Account.delete()
+        self.user2.delete()
+        self.user2Account.delete()
 
     def test_courseCourse_page(self):
         # Ensure that the course creation form is rendered correctly
-        response = self.client.get(reverse('courseManagement'))
+        request = RequestFactory().get(reverse('courseManagement'))
+        request.user = self.user1Account
+
+        response = scheduler.views.courseManagement(request)
+
+
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'courseManagement.html')
+
+    def test_courseManagement_redirect_non_admin(self):
+        # Ensure that non-admin users are redirected to the home page when trying to access courseManagement
+        request = RequestFactory().get(reverse('courseManagement'))
+        request.user = self.user2Account
+
+        response = scheduler.views.courseManagement(request)
+
+        self.assertEqual(response.status_code, 302)
 
     def test_course_creation(self):
         # Create a test instructor
@@ -105,7 +137,6 @@ class TestCreateCourseAcc(TestCase):
         data = {
             'courseName': 'New Course',
             'instructorSelect': instructor.id,
-            # Add other required form fields
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on success
@@ -116,12 +147,10 @@ class TestCreateCourseAcc(TestCase):
         data = {
             'courseName': '',  # Invalid empty course name
             'instructorSelect': 9999,  # Invalid instructor ID
-            # Add other required form fields
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on failure
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
-
 
 
 class TestCreateAccount(unittest.TestCase):
@@ -226,7 +255,7 @@ class TestDeleteAccount(unittest.TestCase):
         result2 = self.app.deleteAccount(self.user1Account.username, self.user1.email)
         self.assertEqual(False, result2)
 
-class TestDeleteAccountACCEPTANCE(django.test.TestCase):
+class TestDeleteAccountACCEPTANCE(TestCase):
     def __init__(self, methodName: str = "runTest"):
         super().__init__(methodName)
         self.client = None
