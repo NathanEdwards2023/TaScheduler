@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
 from scheduler.models import UserTable, CourseTable, LabTable
-
+import re
 
 class AdminAssignmentPage:
     def __init__(self):
@@ -21,25 +21,35 @@ class AdminAssignmentPage:
             newCourse.save()
             return True
 
-    def createAccount(self, username, email, password):
-        # Create a new account
+    @staticmethod
+    def createAccount(username, email, password):
+        pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(pattern, email):
+            raise ValueError("Invalid email format")
+
         if len(password) < 8:
-            return False
+            raise ValueError("Password must be at least 8 characters long")
+
+        if not username:
+            raise ValueError("Username cannot be empty")
+
         if User.objects.filter(email=email).exists():
-            return False
-        else:
-            newAccount = User(username=username, email=email, password=password)
-            newUser = UserTable(email=email)
-            newAccount.save()
-            newUser.save()
-            return True
+            raise ValueError("User with this email already exists")
+
+        newAccount = User(username=username, email=email, password=password)
+        newUser = UserTable(email=email)
+        newAccount.save()
+        newUser.save()
+
+        return True
 
 
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account
         pass
 
-    @staticmethod
+
+
     def deleteAccount(username, email):
         try:
             # Get the user account based on username and email

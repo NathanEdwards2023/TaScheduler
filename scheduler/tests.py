@@ -78,7 +78,7 @@ class TestCreateAccount(TestCase):
 
     def test_createAccountSuccess(self):
         result = self.app.createAccount('user', 'testuser@example.com', 'password')
-        self.assertIsNone(result)
+        self.assertTrue(result)
 
     def test_createAccountEmptyUsername(self):
         with self.assertRaises(ValueError):
@@ -117,11 +117,12 @@ class CreateAccountTestCase(TestCase):
         self.assertTrue(User.objects.filter(username='testuser', email='test@user.com', password='password').exists())
 
     def test_createAccount_failure(self):
-        response = self.client.post(self.createAccount_url,
-                                    {'username': '', 'email': 'preExister@test.com', 'password': 'wordToPass'},
-                                    follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(User.objects.filter(username='', email='preExister@test.com', password='wordToPass').exists())
+        with self.assertRaises(ValueError) as context:
+            self.client.post(self.createAccount_url,
+                             {'username': '', 'email': 'preExister@test.com', 'password': 'wordToPass'},
+                             follow=True)
+        self.assertEqual(str(context.exception), "Username cannot be empty")
+        self.assertFalse(User.objects.filter(email='preExister@test.com').exists())
 
 
 class TestEditAccount(TestCase):
