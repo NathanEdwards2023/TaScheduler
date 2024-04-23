@@ -1,6 +1,7 @@
 import unittest
-
+from django.test import TestCase
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable
@@ -28,13 +29,60 @@ class TestCreateCourse(unittest.TestCase):
 
     def test_createCourse_duplicateName(self):
         self.app.createCourse("Course1", self.user1.id)
-        self.app.createCourse("Course1", self.user1.id)
+        with self.assertRaises(ValueError):
+            self.app.createCourse("Course1", self.user1.id)
         self.assertEqual(CourseTable.objects.filter(courseName="Course1").count(), 1)
 
     def test_createCourse_noInstructor(self):
         #returns true if invalid instructor ID
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValueError):
             self.app.createCourse("Course10", 10)
+
+    def test_createCourse_emptyCourseName(self):
+        with self.assertRaises(ValueError):
+            self.app.createCourse("", self.user1.id)
+
+
+class TestCreateCourseAcc(TestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username='testuserCC', email='testCC@example.com', password='password')
+
+    def tearDown(self):
+        # Clean up test data
+        self.user.delete()
+
+    def test_courseCourse_page(self):
+        # Ensure that the course creation form is rendered correctly
+        response = self.client.get(reverse('courseManagement'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'courseManagement.html')
+
+    def test_course_creation(self):
+        # Create a test instructor
+        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
+
+        # Ensure that a course can be created
+        data = {
+            'courseName': 'New Course',
+            'instructorSelect': instructor.id,
+            # Add other required form fields
+        }
+        response = self.client.post(reverse('courseManagement'), data)
+        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on success
+        self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
+
+    def test_invalid_course_creation(self):
+        # Ensure that an invalid course cannot be created
+        data = {
+            'courseName': '',  # Invalid empty course name
+            'instructorSelect': 9999,  # Invalid instructor ID
+            # Add other required form fields
+        }
+        response = self.client.post(reverse('courseManagement'), data)
+        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on failure
+        self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
+
 
 
 class TestCreateAccount(unittest.TestCase):
