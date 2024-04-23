@@ -107,7 +107,7 @@ class TestCreateCourseAcc(TestCase):
         userAccount2.delete()
     def test_courseCourse_page(self):
         # Ensure that the course creation form is rendered correctly
-        self.client.login(username='JT', password='password123')
+        self.client.login(username='TomT', password='password123')
         response = self.client.get(reverse('courseManagement'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'courseManagement.html')
