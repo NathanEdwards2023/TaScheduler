@@ -54,26 +54,27 @@ class AdminAssignmentPage:
 
     # needs to be static
     @staticmethod
-    def deleteAccount(username, email):
+    def deleteAccount(usernameID, emailID):
         try:
             # Get the user account based on username and email
-            user = UserTable.objects.get(email=email)
-            account = User.objects.get(username=username)
+            account = User.objects.get(id=usernameID)
+            user = UserTable.objects.filter(email=account.email).first()
+            if (account.email != user.email) | (usernameID != emailID):
+                return "username/email match error"
 
             # Delete children
-            if user.userType == "TA":
+            if user.userType == "ta":
                 LabTable.objects.filter(taId=user.id).delete()
-            elif user.userType == "Instructor":
+            elif user.userType == "instructor":
                 CourseTable.objects.filter(instructorId=user.id).delete()
 
             # Finally delete user...
             user.delete()
-
             # Delete the account
             account.delete()
-            return True
+            return "Account deleted successfully"
         except ObjectDoesNotExist:
-            return False
+            return "Failed to delete account"
 
     def assignInstructorToCourse(self, course_id, user_id):
         # Assign an instructor to a course

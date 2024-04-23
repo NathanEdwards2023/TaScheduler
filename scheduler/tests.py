@@ -328,8 +328,8 @@ class TestDeleteAccountACCEPTANCE(TestCase):
         request.user = self.user1Account
 
         requestCopy = request.POST.copy()
-        requestCopy['deleteAccountName'] = 'deleteTest'
-        requestCopy['deleteAccountEmail'] = 'deleteTest@gmail.com'
+        requestCopy['deleteAccountName'] = self.user2.id
+        requestCopy['deleteAccountEmail'] = self.user2.id
         requestCopy['deleteAccBtn'] = 'Delete'
 
         request.POST = requestCopy
@@ -341,17 +341,20 @@ class TestDeleteAccountACCEPTANCE(TestCase):
     def test_adminAccManagement_DeleteNotExist(self):
         request = RequestFactory().post(reverse('adminAccManagement'))
         request.user = self.user1Account
+        for userID in range(1, 9999):
+            try:
+                User.objects.get(id=userID)
+            except User.DoesNotExist:
+                requestCopy = request.POST.copy()
+                requestCopy['deleteAccountName'] = userID  # Provide username to delete
+                requestCopy['deleteAccountEmail'] = userID  # Provide email to delete
+                requestCopy['deleteAccBtn'] = 'Delete'  # Simulate button click
 
-        requestCopy = request.POST.copy()
-        requestCopy['deleteAccountName'] = 'NoAcc'  # Provide username to delete
-        requestCopy['deleteAccountEmail'] = 'notReal@gmail.com'  # Provide email to delete
-        requestCopy['deleteAccBtn'] = 'Delete'  # Simulate button click
+                request.POST = requestCopy
 
-        request.POST = requestCopy
+                response = AdminAccManagement.as_view()(request)
 
-        response = AdminAccManagement.as_view()(request)
-
-        self.assertContains(response, 'Failed to delete account')
+                self.assertContains(response, 'Failed to delete account')
 
 if __name__ == '__main__':
     unittest.main()

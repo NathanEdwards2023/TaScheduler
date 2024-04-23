@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
@@ -63,11 +64,12 @@ def createAccount(request):
 class AdminAccManagement(View):
     @staticmethod
     def get(request):
-
+        users = User.objects.all
         user = request.user
         accRole = UserTable.objects.get(email=request.user.email).userType
         if user.is_authenticated and accRole == 'admin':
-            return render(request, 'adminAccManagement.html')
+            return render(request, 'adminAccManagement.html',
+                          {'users': users})
         else:
 
             # Redirect non-admin users to another page (e.g., home page)
@@ -75,17 +77,16 @@ class AdminAccManagement(View):
 
     @staticmethod
     def post(request):
+        users = User.objects.all
         if request.method == 'POST':
             if 'deleteAccBtn' in request.POST:
+                #             instructor = request.POST.get('instructorSelect')
                 username = request.POST.get('deleteAccountName')
                 email = request.POST.get('deleteAccountEmail')
-
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
-                accDeleted = adminPage.deleteAccount(username=username, email=email)
-                if accDeleted:
-                    return render(request, 'adminAccManagement.html', {'message': "Account deleted successfully"})
-                else:
-                    return render(request, 'adminAccManagement.html', {'message': "Failed to delete account"})
+                accDeleted = adminPage.deleteAccount(usernameID=username, emailID=email)
+                return render(request, 'adminAccManagement.html', {'users': users, 'message': accDeleted})
+
             if 'createAccBtn' in request.POST:
                 username = request.POST.get('createAccountName')
                 email = request.POST.get('createAccountEmail')
