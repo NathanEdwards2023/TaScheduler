@@ -7,11 +7,34 @@
     <title>Create Account</title>
     <link rel="stylesheet" href="{% static 'css/createAccount.css' %}">
 </head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('{% static "images/university-of-wisconsin-milwaukee.jpg" %}');
+            background-color: #f7f7f7;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
 <body>
-    <div class="login-container">
+    <div class="createAccount-container">
         <h1>Create a new account</h1>
         <form method="post" action="{% url 'createAccount' %}">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="error">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
             <label>
                 <input type="text" name="username" placeholder="Username">
             </label>

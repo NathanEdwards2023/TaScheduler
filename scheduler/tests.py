@@ -99,6 +99,31 @@ class TestCreateAccount(TestCase):
             self.assertIn("User already exists", str(context.exception))
 
 
+# Acceptance Tests for createAccount
+class CreateAccountTestCase(TestCase):
+    def setUp(self):
+        self.createAccount_url = reverse('createAccount')
+        self.home_url = reverse('login')
+
+    def tearDown(self):
+        User.objects.filter(username='testuser', email='test@user.com').delete()
+        UserTable.objects.filter(email='test@user.com').delete()
+
+    def test_createAccount_success(self):
+        response = self.client.post(self.createAccount_url,
+                                    {'username': 'testuser', 'email': 'test@user.com', 'password': 'password'},
+                                    follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.filter(username='testuser', email='test@user.com', password='password').exists())
+
+    def test_createAccount_failure(self):
+        response = self.client.post(self.createAccount_url,
+                                    {'username': '', 'email': 'preExister@test.com', 'password': 'wordToPass'},
+                                    follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username='', email='preExister@test.com', password='wordToPass').exists())
+
+
 class TestEditAccount(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
@@ -120,14 +145,13 @@ class TestEditAccount(TestCase):
 
 
 class TestDeleteAccount(TestCase):
-    # FIXME this unit test needs some correcting
     def setUp(self):
         self.app = AdminAssignmentPage()
         #user 1
         self.user1 = UserTable(firstName="John", lastName="Doe", email="John@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="john", email=self.user1.email,  password="password123")
+        self.user1Account = User(username="john", email=self.user1.email, password="password123")
         self.user1Account.save()
         #user 2
         self.user2 = UserTable(firstName="Jeff", lastName="Doe", email="Jeff@gmail.com", phone="262-724-8212",
