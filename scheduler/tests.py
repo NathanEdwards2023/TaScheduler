@@ -81,14 +81,33 @@ class TestCreateCourse(unittest.TestCase):
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
         # Create a test user
-        self.user = User.objects.create_user(username='testuserCC', email='testCC@example.com', password='password')
+        self.app = AdminAssignmentPage()
+        user = UserTable(firstName="Tom", lastName="Thompson", email="testCC@gmail.com", phone="8675309",
+                         address="123 street", userType="admin")
+        user.save()
+        userAccount = User(username="TomT", password="password123", email=user.email)
+        userAccount.save()
 
+        user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
+                         address="123 street", userType="instructor")
+        user2.save()
+        userAccount2 = User(username="JeffT", password="password123", email=user2.email)
+        userAccount2.save()
     def tearDown(self):
         # Clean up test data
-        self.user.delete()
+        # Clean up test data
+        user = UserTable.objects.get(email="testCC@gmail.com")
+        userAccount = User.objects.get(email="testCC@gmail.com")
+        user2 = UserTable.objects.get(email="nonadmin@gmail.com")
+        userAccount2 = User.objects.get(email="nonadmin@gmail.com")
 
+        user.delete()
+        userAccount.delete()
+        user2.delete()
+        userAccount2.delete()
     def test_courseCourse_page(self):
         # Ensure that the course creation form is rendered correctly
+        self.client.login(username='JT', password='password123')
         response = self.client.get(reverse('courseManagement'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'courseManagement.html')
