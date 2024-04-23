@@ -29,15 +29,13 @@ def courseManagement(request):
 
             # Create a new CourseTable object
             admin_page = adminAssignmentPage.AdminAssignmentPage()
-            courseCreated = admin_page.createCourse(courseName, instructor)
-
-            if courseCreated:
+            try:
+                admin_page.createCourse(courseName, instructor)
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
-            else:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course failed to be created"})
-
-            return redirect('courseManagement')
-        return render(request, 'courseManagement.html')
+            except ValueError as msg:
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+        return redirect('courseManagement')
+    return render(request, 'courseManagement.html')
 
 
 def createAccount(request):
