@@ -94,6 +94,12 @@ class TestCreateCourseAcc(TestCase):
         self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
         self.user2Account.save()
 
+
+        user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
+                         address="123 street", userType="instructor")
+        user2.save()
+        userAccount2 = User(username="JeffT", password="password123", email=user2.email)
+        userAccount2.save()
     def tearDown(self):
         # Clean up test data
         self.user1.delete()
@@ -107,6 +113,7 @@ class TestCreateCourseAcc(TestCase):
         request.user = self.user1Account
 
         response = scheduler.views.courseManagement(request)
+
 
         self.assertEqual(response.status_code, 200)
 
