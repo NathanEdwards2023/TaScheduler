@@ -93,6 +93,12 @@ class TestCreateCourseAcc(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'courseManagement.html')
 
+    def test_courseManagement_redirect_non_admin(self):
+        # Ensure that non-admin users are redirected to the home page when trying to access courseManagement
+        self.client.login(username='JeffT', password='password123')
+        response = self.client.get(reverse('courseManagement'))
+        self.assertRedirects(response, reverse('home'), status_code=302, target_status_code=200)
+
     def test_course_creation(self):
         # Create a test instructor
         instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
