@@ -15,7 +15,11 @@ class AdminAssignmentPage:
     def createCourse(self, courseName, instructorId):
         # Create a new course
         if CourseTable.objects.filter(courseName=courseName).exists():
-            return False
+            raise ValueError("Course already exists")
+        elif courseName == "":
+            raise ValueError("Invalid course name")
+        elif not UserTable.objects.filter(id=instructorId).exists():
+            raise ValueError("Invalid instructor")
         else:
             newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
             newCourse.save()
