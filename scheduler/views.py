@@ -2,15 +2,16 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from pip._vendor.requests.models import Response
+from django.contrib.auth.decorators import login_required
 
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable
 
-
+@login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
 
-
+@login_required(login_url='login')
 def courseManagement(request):
     courses = CourseTable.objects.all()
     TAs = UserTable.objects.filter(userType="TA")
