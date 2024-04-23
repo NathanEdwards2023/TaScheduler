@@ -189,3 +189,28 @@ select {
 .closeAccDeletedBtn:hover {
     color: black;
 }
+
+.accountCreatedMsg {
+    padding: 20px;
+    background-color: #f44336;
+    color: white;
+}
+
+.show {
+    display: block;
+}
+
+.closeAccCreatedBtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.closeAccCreatedBtn:hover {
+    color: black;
+}

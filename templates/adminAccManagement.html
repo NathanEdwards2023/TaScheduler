@@ -24,7 +24,10 @@
         <div class="clock">12:00 PM</div>
         <span>April 13, 2024</span>
     </div>
-    <logoutButton>Logout</logoutButton>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
 </header>
 
 <!--Admin Account Management Menu-->
@@ -42,9 +45,21 @@
                     <input type="text" id="createAccountEmail" name="createAccountEmail"><br>
                     <label for="createAccountPassword">Enter Account Password:</label><br>
                     <input type="text" id="createAccountPassword" name="createAccountPassword"><br><br>
-                    <input type="submit" value="Create Account">
+                    <input type="submit" name="createAccBtn" value="Create Account">
                 </form>
             </div>
+                        {% if messageCreateAcc %}
+                <div class="accountCreatedMsg">
+                    <span class="closeAccCreatedBtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                    <p>{{ messageCreateAcc }}</p>
+                </div>
+            {% endif %}
+
+            <script>
+                function closeMessage() {
+                    document.querySelector('.accountCreatedMsg').style.display = 'none';
+                }
+            </script>
         </section>
         <!--deleting account-->
         <section>

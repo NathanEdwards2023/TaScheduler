@@ -18,8 +18,15 @@ def courseManagement(request):
     labs = LabTable.objects.all()
 
     if request.method == 'GET':
-        return render(request, 'courseManagement.html',
-                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+        user = request.user
+        accRole = UserTable.objects.get(email=request.user.email).userType
+        if user.is_authenticated and accRole == 'admin':
+            return render(request, 'courseManagement.html',
+                          {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+        else:
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('home')
+
     else:
         if request.method == 'POST':
             courseName = request.POST.get('courseName')
@@ -29,19 +36,27 @@ def courseManagement(request):
 
             # Create a new CourseTable object
             admin_page = adminAssignmentPage.AdminAssignmentPage()
-            courseCreated = admin_page.createCourse(courseName, instructor)
-
-            if courseCreated:
+            try:
+                admin_page.createCourse(courseName, instructor)
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
-            else:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course failed to be created"})
-
-            return redirect('courseManagement')
-        return render(request, 'courseManagement.html')
+            except ValueError as msg:
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+        return redirect('courseManagement')
+    return render(request, 'courseManagement.html')
 
 
 def createAccount(request):
-    # Stub method, complete later
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        adminPage = adminAssignmentPage.AdminAssignmentPage()
+        accountCreated = adminPage.createAccount(username=username, email=email, password=password)
+        if accountCreated:
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+        else:
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+
     return render(request, 'createAccount.html')
 
 
@@ -71,3 +86,13 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'message': "Account deleted successfully"})
                 else:
                     return render(request, 'adminAccManagement.html', {'message': "Failed to delete account"})
+            if 'createAccBtn' in request.POST:
+                username = request.POST.get('createAccountName')
+                email = request.POST.get('createAccountEmail')
+                password = request.POST.get('createAccountPassword')
+                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                accCreated = adminPage.createAccount(username=username, email=email, password=password)
+                if accCreated:
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
+                else:
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Failed to create account"})
