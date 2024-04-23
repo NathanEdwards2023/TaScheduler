@@ -77,6 +77,6 @@ class AdminAccManagement(View):
                 password = request.POST.get('createAccountPassword')
                 accCreated = True
                 if accCreated:
-                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created successfully"})
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
                 else:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Failed to create account"})
