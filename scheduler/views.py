@@ -21,7 +21,7 @@ def courseManagement(request):
 
     if request.method == 'GET':
         user = request.user
-        accRole = UserTable.objects.get(email=request.user.email).userType
+        accRole = UserTable.objects.get(email=user.email).userType
         if user.is_authenticated and accRole == 'admin':
             return render(request, 'courseManagement.html',
                           {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
@@ -30,7 +30,7 @@ def courseManagement(request):
             return redirect('home')
 
     else:
-        if request.method == 'POST':
+        if request.method == 'POST' and 'createCourseBtn' in request.POST:
             courseName = request.POST.get('courseName')
             courseTime = request.POST.get('courseTime')
             courseDays = request.POST.get('courseDays')
