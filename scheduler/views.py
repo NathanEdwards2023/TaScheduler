@@ -63,6 +63,7 @@ def createAccount(request):
 
 class AdminAccManagement(View):
     @staticmethod
+    @login_required(login_url='login')
     def get(request):
 
         user = request.user
