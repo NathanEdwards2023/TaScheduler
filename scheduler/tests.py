@@ -242,42 +242,42 @@ class TestDeleteAccount(TestCase):
         self.user2Account.save()
 
     def test_deleteAccount(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        self.assertEqual(True, result)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        self.assertEqual("Account deleted successfully", result)
 
     def test_deleteAccountInvalidAccount(self):
-        result = self.app.deleteAccount("Joe", "Joe@email.com")
-        self.assertEqual(False, result)
+        result = self.app.deleteAccount(99999999, 99999999)
+        self.assertEqual("Failed to delete account", result)
 
     def test_deleteAccountEmptyArguments(self):
-        result = self.app.deleteAccount("", "")
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount("", "")
 
     def test_deleteAccountEmptyUsername(self):
-        result = self.app.deleteAccount("", self.user1.email)
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount("", self.user1.email)
 
     def test_deleteAccountEmptyEmail(self):
-        result = self.app.deleteAccount(self.user1Account.username, "")
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount(self.user1Account.username, "")
 
     def test_deleteAccountWrongEmail(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user2.email)
-        self.assertEqual(False, result)
+        result = self.app.deleteAccount(self.user1Account.id, self.user2Account.id)
+        self.assertEqual("username/email match error", result)
 
     def test_deleteTwoAccount(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        result2 = self.app.deleteAccount(self.user2Account.username, self.user2.email)
-        self.assertEqual(True, result, result2)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        result2 = self.app.deleteAccount(self.user2Account.id, self.user2Account.id)
+        self.assertEqual("Account deleted successfully", result, result2)
 
     def test_invalidArg(self):
-        with self.assertRaises(TypeError):
-            self.app.deleteAccount(1, self.user1.email)
+        result = self.app.deleteAccount(1, "ID")
+        self.assertEqual("username/email match error", result)
 
     def test_deleteSameAccountTwice(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        result2 = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        self.assertEqual(False, result2)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        result2 = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        self.assertEqual("Failed to delete account", result2)
 
 class TestDeleteAccountACCEPTANCE(TestCase):
     def __init__(self, methodName: str = "runTest"):
