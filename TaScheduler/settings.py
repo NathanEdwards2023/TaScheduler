@@ -27,9 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-LOGIN_URL = '/login/'
-
+LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/home/'
+
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Application definition
 
