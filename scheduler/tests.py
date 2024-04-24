@@ -127,19 +127,21 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 302) #redirects
 
     def test_course_creation(self):
         # Create a test instructor
         instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
-
+        self.client.login(username="adminTest", password="adpassword")
         # Ensure that a course can be created
         data = {
             'courseName': 'New Course',
             'instructorSelect': instructor.id,
+            'createCourseBtn': 'Submit',  # button used
+
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on success
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
 
     def test_invalid_course_creation(self):
@@ -149,7 +151,7 @@ class TestCreateCourseAcc(TestCase):
             'instructorSelect': 9999,  # Invalid instructor ID
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302) #redirects to self
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
