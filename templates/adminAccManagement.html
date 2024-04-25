@@ -68,9 +68,25 @@
                 <form method="post" action="{% url 'adminAccManagement' %}">
                     {% csrf_token %}
                     <label for="deleteAccountName">Enter Account Name:</label><br>
-                    <input type="text" id="deleteAccountName" name="deleteAccountName"><br>
+                    <select id="deleteAccountName" name="deleteAccountName">
+                            {% if users %}
+                                {% for user in users %}
+                                    <option value="{{ user.id }}">{{user.username}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No username available</option>
+                            {% endif %}
+                        </select><br><br>
                     <label for="deleteAccountEmail">Enter Account Email:</label><br>
-                    <input type="text" id="deleteAccountEmail" name="deleteAccountEmail"><br>
+                    <select id="deleteAccountEmail" name="deleteAccountEmail">
+                            {% if users %}
+                                {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.email}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No username available</option>
+                            {% endif %}
+                        </select><br><br>
                     <input type="submit" name="deleteAccBtn" value="Delete Account">
                 </form>
             </div>

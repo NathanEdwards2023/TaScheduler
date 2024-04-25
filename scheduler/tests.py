@@ -127,19 +127,21 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 302) #redirects
 
     def test_course_creation(self):
         # Create a test instructor
         instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
-
+        self.client.login(username="adminTest", password="adpassword")
         # Ensure that a course can be created
         data = {
             'courseName': 'New Course',
             'instructorSelect': instructor.id,
+            'createCourseBtn': 'Submit',  # button used
+
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)  # Assuming you return HTTP 200 on success
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
 
     def test_invalid_course_creation(self):
@@ -149,7 +151,7 @@ class TestCreateCourseAcc(TestCase):
             'instructorSelect': 9999,  # Invalid instructor ID
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302) #redirects to self
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
@@ -242,42 +244,42 @@ class TestDeleteAccount(TestCase):
         self.user2Account.save()
 
     def test_deleteAccount(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        self.assertEqual(True, result)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        self.assertEqual("Account deleted successfully", result)
 
     def test_deleteAccountInvalidAccount(self):
-        result = self.app.deleteAccount("Joe", "Joe@email.com")
-        self.assertEqual(False, result)
+        result = self.app.deleteAccount(99999999, 99999999)
+        self.assertEqual("Failed to delete account", result)
 
     def test_deleteAccountEmptyArguments(self):
-        result = self.app.deleteAccount("", "")
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount("", "")
 
     def test_deleteAccountEmptyUsername(self):
-        result = self.app.deleteAccount("", self.user1.email)
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount("", self.user1.email)
 
     def test_deleteAccountEmptyEmail(self):
-        result = self.app.deleteAccount(self.user1Account.username, "")
-        self.assertEqual(False, result)
+        with self.assertRaises(ValueError):
+            self.app.deleteAccount(self.user1Account.username, "")
 
     def test_deleteAccountWrongEmail(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user2.email)
-        self.assertEqual(False, result)
+        result = self.app.deleteAccount(self.user1Account.id, self.user2Account.id)
+        self.assertEqual("username/email match error", result)
 
     def test_deleteTwoAccount(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        result2 = self.app.deleteAccount(self.user2Account.username, self.user2.email)
-        self.assertEqual(True, result, result2)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        result2 = self.app.deleteAccount(self.user2Account.id, self.user2Account.id)
+        self.assertEqual("Account deleted successfully", result, result2)
 
     def test_invalidArg(self):
-        with self.assertRaises(TypeError):
-            self.app.deleteAccount(1, self.user1.email)
+        result = self.app.deleteAccount(1, "ID")
+        self.assertEqual("username/email match error", result)
 
     def test_deleteSameAccountTwice(self):
-        result = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        result2 = self.app.deleteAccount(self.user1Account.username, self.user1.email)
-        self.assertEqual(False, result2)
+        result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        result2 = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
+        self.assertEqual("Failed to delete account", result2)
 
 class TestDeleteAccountACCEPTANCE(TestCase):
     def __init__(self, methodName: str = "runTest"):
@@ -328,8 +330,8 @@ class TestDeleteAccountACCEPTANCE(TestCase):
         request.user = self.user1Account
 
         requestCopy = request.POST.copy()
-        requestCopy['deleteAccountName'] = 'deleteTest'
-        requestCopy['deleteAccountEmail'] = 'deleteTest@gmail.com'
+        requestCopy['deleteAccountName'] = self.user2.id
+        requestCopy['deleteAccountEmail'] = self.user2.id
         requestCopy['deleteAccBtn'] = 'Delete'
 
         request.POST = requestCopy
@@ -341,17 +343,20 @@ class TestDeleteAccountACCEPTANCE(TestCase):
     def test_adminAccManagement_DeleteNotExist(self):
         request = RequestFactory().post(reverse('adminAccManagement'))
         request.user = self.user1Account
+        for userID in range(1, 9999):
+            try:
+                User.objects.get(id=userID)
+            except User.DoesNotExist:
+                requestCopy = request.POST.copy()
+                requestCopy['deleteAccountName'] = userID  # Provide username to delete
+                requestCopy['deleteAccountEmail'] = userID  # Provide email to delete
+                requestCopy['deleteAccBtn'] = 'Delete'  # Simulate button click
 
-        requestCopy = request.POST.copy()
-        requestCopy['deleteAccountName'] = 'NoAcc'  # Provide username to delete
-        requestCopy['deleteAccountEmail'] = 'notReal@gmail.com'  # Provide email to delete
-        requestCopy['deleteAccBtn'] = 'Delete'  # Simulate button click
+                request.POST = requestCopy
 
-        request.POST = requestCopy
+                response = AdminAccManagement.as_view()(request)
 
-        response = AdminAccManagement.as_view()(request)
-
-        self.assertContains(response, 'Failed to delete account')
+                self.assertContains(response, 'Failed to delete account')
 
 if __name__ == '__main__':
     unittest.main()
