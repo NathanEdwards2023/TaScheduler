@@ -236,16 +236,16 @@ class CreateAccountTestCase(TestCase):
         self.login_url = reverse('login')
 
     def tearDown(self):
-        User.objects.filter(username='testYuser', email='test@Yuser.com').delete()
+        User.objects.filter(username='testuser', email='test@user.com').delete()
         UserTable.objects.filter(email='test@user.com').delete()
 
     def test_createAccount_success(self):
         response = self.client.post(self.createAccount_url,
-                                    {'username': 'testuser', 'email': 'test@user.com', 'password': 'testuser'},
+                                    {'username': 'testuser', 'email': 'test@user.com', 'password': 'password'},
                                     follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(User.objects.filter(username='testuser', email='test@user.com').exists())
-        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'testuser'}, follow=True)
+        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'password'}, follow=True)
         self.assertTrue(response.context['user'].is_authenticated)
         self.assertRedirects(response, expected_url=reverse('home'))
 
@@ -255,7 +255,7 @@ class CreateAccountTestCase(TestCase):
                              {'username': '', 'email': 'nonExister@test.com', 'password': 'wordToPass'},
                              follow=True)
         self.assertEqual(str(context.exception), "All fields need to be filled out")
-        self.assertFalse(User.objects.filter(username='', email='preExister@test.com').exists())
+        self.assertFalse(User.objects.filter(username='', email='nonExister@test.com').exists())
         response = self.client.post(self.login_url, {'username': '', 'password': 'wordToPass'}, follow=True)
         self.assertFalse(response.context['user'].is_authenticated)
 
