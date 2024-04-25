@@ -73,7 +73,7 @@ class TestCreateCourse(unittest.TestCase):
         self.assertEqual(CourseTable.objects.filter(courseName="Course1").count(), 1)
 
     def test_createCourse_noInstructor(self):
-        #returns true if invalid instructor ID
+        # returns true if invalid instructor ID
         with self.assertRaises(ValueError):
             self.app.createCourse("Course10", 10)
 
@@ -85,24 +85,26 @@ class TestCreateCourse(unittest.TestCase):
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
+                               phone="adminTest",
                                address="adminTest", userType="admin")
         self.user1.save()
         self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com",
+                               phone="deleteTest",
                                address="deleteTest", userType="ta")
         self.user2.save()
         self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
         self.user2Account.save()
 
-
         user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
-                         address="123 street", userType="instructor")
+                          address="123 street", userType="instructor")
         user2.save()
         userAccount2 = User(username="JeffT", password="password123", email=user2.email)
         userAccount2.save()
+
     def tearDown(self):
         # Clean up test data
         self.user1.delete()
@@ -117,7 +119,6 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-
         self.assertEqual(response.status_code, 200)
 
     def test_courseManagement_redirect_non_admin(self):
@@ -127,11 +128,12 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-        self.assertEqual(response.status_code, 302) #redirects
+        self.assertEqual(response.status_code, 302)  # redirects
 
     def test_course_creation(self):
         # Create a test instructor
-        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
+        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com",
+                                              phone="1234567890", address="123 Main St", userType="Instructor")
         self.client.login(username="adminTest", password="adpassword")
         # Ensure that a course can be created
         data = {
@@ -151,7 +153,7 @@ class TestCreateCourseAcc(TestCase):
             'instructorSelect': 9999,  # Invalid instructor ID
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 302) #redirects to self
+        self.assertEqual(response.status_code, 302)  # redirects to self
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
@@ -230,13 +232,13 @@ class TestEditAccount(TestCase):
 class TestDeleteAccount(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
-        #user 1
+        # user 1
         self.user1 = UserTable(firstName="John", lastName="Doe", email="John@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user1.save()
         self.user1Account = User(username="john", email=self.user1.email, password="password123")
         self.user1Account.save()
-        #user 2
+        # user 2
         self.user2 = UserTable(firstName="Jeff", lastName="Doe", email="Jeff@gmail.com", phone="262-724-8212",
                                address="some address", userType="Instructor")
         self.user2.save()
@@ -281,6 +283,7 @@ class TestDeleteAccount(TestCase):
         result2 = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
         self.assertEqual("Failed to delete account", result2)
 
+
 class TestDeleteAccountACCEPTANCE(TestCase):
     def __init__(self, methodName: str = "runTest"):
         super().__init__(methodName)
@@ -288,13 +291,15 @@ class TestDeleteAccountACCEPTANCE(TestCase):
 
     def setUp(self):
         self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
+                               phone="adminTest",
                                address="adminTest", userType="admin")
         self.user1.save()
         self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com",
+                               phone="deleteTest",
                                address="deleteTest", userType="ta")
         self.user2.save()
         self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
@@ -357,6 +362,7 @@ class TestDeleteAccountACCEPTANCE(TestCase):
                 response = AdminAccManagement.as_view()(request)
 
                 self.assertContains(response, 'Failed to delete account')
+
 
 if __name__ == '__main__':
     unittest.main()
