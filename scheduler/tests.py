@@ -358,5 +358,82 @@ class TestDeleteAccountACCEPTANCE(TestCase):
 
                 self.assertContains(response, 'Failed to delete account')
 
+
+class AssignTATests(TestCase):
+    def setup(self):
+        self.admin = User.objects.create(username='admin', email='admin@test.com', password='adminpass', is_staff=True)
+        self.ta1 = UserTable.objects.create(firstName='TA1', lastName='User', email='ta1test@test.com', userType='TA')
+        self.ta2 = UserTable.objects.create(firstName='TA2', lastName='User', email='ta2test@test.com', userType='TA')
+        self.course = CourseTable.objects.create(courseName='Intro to Testing')
+        self.client.login(username='admin', password='adminpass')
+
+    def test_assign_ta_to_course_by_admin(self):
+        response = self.client.post('/courseManagement/assignTATests',
+                                    {'taId': self.ta1.id, 'courseId': self.course.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(LabTable.objects.filter(taId=self.ta1.id, courseId=self.course.id).exists())
+
+    def test_prevent_multiple_course_assignments_to_ta(self):
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=self.ta1)
+        new_course = CourseTable.objects.create(courseName='Advanced Testing')
+        response = self.client.post('/courseManagement/', {'taId': self.ta1.id, 'courseId': new_course.id})
+        self.assertIn('This TA is already assigned to a course.', response.context['messages'])
+
+    def test_course_max_two_tas(self):
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=self.ta1)
+        second_ta = UserTable.objects.create(firstName='TA3', lastName='User', email='ta3@test.com', userType='TA')
+        LabTable.objects.create(sectionNumber='102', courseId=self.course, taId=second_ta)
+
+        third_ta = UserTable.objects.create(firstName='TA4', lastName='User', email='ta4@test.com', userType='TA')
+        response = self.client.post('/courseManagement/', {'taId': third_ta.id, 'courseId': self.course.id})
+        self.assertIn('This course already has two TAs.', response.context['messages'])
+
+    def test_non_admin_cannot_assign_ta(self):
+        self.client.logout()
+        self.client.login(username='nonadmin', password='userpass')
+        response = self.client.post('/courseManagement/', {'taId': self.ta2.id, 'courseId': self.course.id})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(LabTable.objects.filter(taId=self.ta2.id, courseId=self.course.id).exists())
+
+
+class AssignTAToLabTests(TestCase):
+    def setup(self):
+        self.admin = User.objects.create_user(username='admin', email='admin@test.com', password='adminpass',
+                                              is_staff=True)
+        self.instructor = User.objects.create_user(username='instructor', email='instructor@test.com',
+                                                   password='instructorpass', is_staff=True)
+        self.ta = UserTable.objects.create(firstName='TA', lastName='User', email='ta@test.com', userType='TA')
+        self.course = CourseTable.objects.create(courseName='Intro to Testing')
+        self.lab = LabTable.objects.create(sectionNumber='101', courseId=self.course)
+
+        self.course.instructorId = self.instructor
+        self.course.save()
+
+    def test_assign_ta_to_lab_by_instructor(self):
+        self.client.login(username='instructor', password='instructorpass')
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(LabTable.objects.filter(taId=self.ta, courseId=self.lab.courseId).exists())
+
+    def test_prevent_double_assignment_of_ta_to_lab(self):
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=self.ta)
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertIn('This TA is already assigned to this lab', response.context.get('messages', []))
+
+    def test_prevent_unauthorized_user_from_assigning_ta(self):
+        regular_user = User.objects.create_user(username='regular', email='regular@test.com', password='regularpass',
+                                                is_staff=False)
+        self.client.login(username='regular', password='regularpass')
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertEqual(response.status_code, 403)
+
+    def test_lab_section_limits_one_ta(self):
+        another_ta = UserTable.objects.create(firstName='AnotherTA', lastName='User', email='anotherta@test.com',
+                                              userType='TA')
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=another_ta)
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertIn('Lab section already has a TA.', response.context.get('messages', []))
+
+
 if __name__ == '__main__':
     unittest.main()
