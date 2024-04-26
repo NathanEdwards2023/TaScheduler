@@ -39,13 +39,10 @@ class AdminAssignmentPage:
 
         if User.objects.filter(email=email).exists():
             raise ValueError("User with this email already exists")
-
-        next_id = User.objects.order_by('-id').first().id + 1
-        newAccount = User(username=username, email=email, password=password)
-        newUser = UserTable(email=email, phone=next_id)
+        newAccount = User.objects.create_user(username=username, email=email, password=password)
+        newUser = UserTable(email=email)
         newAccount.save()
         newUser.save()
-
         return True
 
 
