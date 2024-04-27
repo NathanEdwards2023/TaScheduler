@@ -47,7 +47,6 @@ class AdminAssignmentPage:
         newUser = UserTable(email=email)
         newAccount.save()
         newUser.save()
-
         return True
 
 
