@@ -25,20 +25,24 @@ class AdminAssignmentPage:
             newCourse.save()
             return True
 
+    def editCourse(self, course_id, courseName, instructorID, time):
+        pass
     @staticmethod
     def createAccount(username, email, password):
         pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+
+        if username == "" or email == "" or password == "":
+            raise ValueError("All fields need to be filled out")
+
         if not re.match(pattern, email):
             raise ValueError("Invalid email format")
 
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
 
-        if not username:
-            raise ValueError("Username cannot be empty")
-
         if User.objects.filter(email=email).exists():
             raise ValueError("User with this email already exists")
+
         newAccount = User.objects.create_user(username=username, email=email, password=password)
         newUser = UserTable(email=email)
         newAccount.save()

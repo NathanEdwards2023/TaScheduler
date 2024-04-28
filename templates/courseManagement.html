@@ -185,6 +185,36 @@
                     </div>
                 </div>
             </section>
+        <section>
+            <h2 class="menuTitle">Edit a Course</h2>
+            <div class="menuBox">
+                <form>
+                        <label for="courseSelect">Select Course:</label><br>
+                        <select id="courseSelect" name="courseSelect">
+                            {% if courses %}
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No courses available</option>
+                            {% endif %}
+                        </select><br>
+                        <label for="instructorSelect">Change instructor:</label><br>
+                        <select id="instructorSelect" name="instructorSelect">
+                            {% if instructors %}
+                                {% for instructor in instructors %}
+                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No instructors available</option>
+                            {% endif %}
+                        </select><br>
+                        <label for="time">Change Course Time:</label><br>
+                        <input type="text" id="time" name="time"><br>
+                        <input type="submit" name="editCourseBtn" value="Edit">
+                    </form>
+            </div>
+        </section>
         </div>
     </main>
 </body>
