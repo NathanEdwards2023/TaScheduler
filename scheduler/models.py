@@ -24,6 +24,11 @@ class CourseTable(models.Model):
     )
 
 
+class CourseTA(models.Model):
+    course = models.ForeignKey(CourseTable, on_delete=models.CASCADE)
+    ta = models.ForeignKey(UserTable, on_delete=models.CASCADE)
+
+
 class LabTable(models.Model):
     # Fields
     sectionNumber = models.CharField(max_length=30)

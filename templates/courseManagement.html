@@ -84,7 +84,42 @@
                     {% endif %}
                 </div>
             </section>
-        <!--assign to course-->
+        <section>
+            <h2 class="menuTitle">Assign TA to Course</h2>
+            <div class="menuBox">
+                <form method="post" action="{% url 'courseManagement' %}">
+                {% csrf_token %}
+                <label for="taCourseSelect">Select Course:</label>
+                <select id="taCourseSelect" name="taCourseSelect">
+                    {% for course in courses %}
+                        <option value="{{ course.id }}">{{ course.courseName }}</option>
+                    {% empty %}
+                        <option value="">No courses available</option>
+                    {% endfor %}
+            </select><br>
+            
+            <label for="taSelect">Select TA:</label>
+            <select id="taSelect" name="taSelect">
+                {% for TA in TAs %}
+                    <option value="{{ TA.id }}">{{ TA.firstName }} {{ TA.lastName }}</option>
+                {% empty %}
+                    <option value="">No TAs available</option>
+                {% endfor %}
+            </select><br><br>
+                
+
+            <input type="submit" name="assignTAToCourseBtn" value="Assign TA">
+                {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+        </form>
+    </div>
+        </section>
+        <!--assign to instructor to course-->
             <section>
                 <h2 class="menuTitle">Assign to Course</h2>
                 <div class="menuBoxMid">

@@ -4,13 +4,16 @@ from django.shortcuts import render, redirect
 from django.views import View
 from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable
+from .models import CourseTable, UserTable, LabTable, CourseTA
+
 
 @login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
+
 
 @login_required(login_url='login')
 def courseManagement(request):
@@ -35,16 +38,37 @@ def courseManagement(request):
             courseTime = request.POST.get('courseTime')
             courseDays = request.POST.get('courseDays')
             instructor = request.POST.get('instructorSelect')
+            ta_ids = request.POST.getlist('taSelect')
 
             # Create a new CourseTable object
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             try:
                 admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': "Course successfully created"})
             except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': msg})
+        elif 'assignTAToCourseBtn' in request.POST:  # This is the new part to handle TA assignment to courses
+            course_id = request.POST.get('taCourseSelect')
+            ta_id = request.POST.get('taSelect')
+            try:
+                course = CourseTable.objects.get(pk=course_id)
+                ta = UserTable.objects.get(pk=ta_id)
+                # Here, handle the association, assuming it's a ManyToManyField for TAs
+                CourseTA.objects.create(course=course, ta=ta)
+
+                messages.success(request, "TA successfully assigned to course.")
+            except CourseTable.DoesNotExist:
+                messages.error(request, "Selected course not found.")
+            except UserTable.DoesNotExist:
+                messages.error(request, "Selected TA not found.")
         return redirect('courseManagement')
-    return render(request, 'courseManagement.html')
+
+    return render(request, 'courseManagement.html',
+                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
 
 
 def createAccount(request):
@@ -55,9 +79,11 @@ def createAccount(request):
         adminPage = adminAssignmentPage.AdminAssignmentPage()
         accountCreated = adminPage.createAccount(username=username, email=email, password=password)
         if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account created successfully"})
         else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account failed to be created"})
 
     return render(request, 'createAccount.html')
 
