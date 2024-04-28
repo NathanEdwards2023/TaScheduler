@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 import re
 
 class AdminAssignmentPage:
@@ -24,6 +24,50 @@ class AdminAssignmentPage:
             newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
             newCourse.save()
             return True
+
+    @staticmethod
+    def createCourse(courseName, instructorId):
+        # Create a new course
+        if CourseTable.objects.filter(courseName=courseName).exists():
+            raise ValueError("Course already exists")
+        elif courseName == "":
+            raise ValueError("Invalid course name")
+        elif instructorId != "" and not UserTable.objects.filter(id=instructorId).exists():
+            raise ValueError("Invalid instructor")
+        else:
+            newCourse = CourseTable(courseName=courseName)
+            newCourse.save()
+            if instructorId != "":
+                instructor = UserTable.objects.get(id=instructorId)
+                newJoin = UserCourseJoinTable(userId=instructor, courseId=newCourse)
+                newJoin.save()
+            return True
+
+    @staticmethod
+    def deleteCourse(courseId):
+        if CourseTable.objects.get(id=courseId).DoesNotExist:
+            return ValueError("Course does not exist")
+        try:
+            course = CourseTable.objects.get(id=courseId)
+            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
+            for ucj in ucjt:
+                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
+                for sec in sect:
+                    labt = LabTable.objects.filter(sectionId=sec)
+                    for lab in labt:
+                        lab.delete()
+                    sec.delete()
+                ucj.delete()
+            course.delete()
+            return True
+        except CourseTable.objects.get(id=courseId).DoesNotExist:
+            # Handle the case where the course does not exist
+            # You can render an error message or redirect to an error page
+            return ValueError("Course does not exist")
+
+    @staticmethod
+    def createLabSection(labId, courseId):
+        pass
 
     @staticmethod
     def createAccount(username, email, password):
