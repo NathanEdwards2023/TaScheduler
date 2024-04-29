@@ -7,7 +7,7 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -411,6 +411,47 @@ class TestGetRole(unittest.TestCase):
         # Test getting role with no email
         role = self.app.getRole("")
         self.assertIsNone(role)
+
+class TestCreateSection(unittest.TestCase):
+    def setUp(self):
+        self.app = AdminAssignmentPage()
+        self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
+                               address="some address", userType="instructor")
+        self.user1.save()
+        self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
+        self.user1Account.save()
+
+        self.course1 = CourseTable(courseName="unitTest")
+        self.course1.save()
+        self.joinTable = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
+        self.joinTable.save()
+
+    def tearDown(self):
+        # Clean up test data
+        self.user1.delete()
+        self.user1Account.delete()
+        self.course1.delete()
+        self.joinTable.delete()
+
+    def test_createSection_correctly(self):
+        self.app.createSection("SectionUnitTest1", self.joinTable.id)
+        section = SectionTable.objects.filter(name="SectionUnitTest1").first()
+
+        self.assertEqual((section.name, section.userCourseJoinId.id), ("SectionUnitTest1", self.joinTable.id))
+
+    def test_createSection_noJoinTable(self):
+        # returns true if invalid Join table ID
+        for joinTableID in range(1, 9999):
+            try:
+                UserCourseJoinTable.objects.get(id=joinTableID)
+            except User.DoesNotExist:
+                with self.assertRaises(ValueError):
+                    self.app.createSection("SectionUnitTest1", joinTableID)
+
+    def test_createSection_emptySectionName(self):
+        with self.assertRaises(ValueError):
+            self.app.createSection("", self.joinTable.id)
+
 
 
 if __name__ == '__main__':
