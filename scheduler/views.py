@@ -96,6 +96,6 @@ class AdminAccManagement(View):
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
                 try:
                     adminPage.createAccount(username=username, email=email, password=password)
-                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
+                    return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': "Account created"})
                 except ValueError as msg:
-                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+                    return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})

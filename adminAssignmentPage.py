@@ -86,6 +86,14 @@ class AdminAssignmentPage:
         # Assign a TA to a lab
         pass
 
-    def getRole(self, email):
-        # get the accs role
+    @staticmethod
+    def getRole(email):
+        try:
+            return UserTable.objects.get(email=email).userType
+        except ObjectDoesNotExist:
+            return None
+
+    @staticmethod
+    def createSection(sectionName, joinTableId):
+        # Create a new course
         pass
