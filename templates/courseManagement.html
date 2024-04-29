@@ -44,8 +44,9 @@
                         <label for="instructorSelectForToo">Select Instructor:</label><br>
                         <select id="instructorSelectForToo" name="instructorSelect">
                             {% if instructors %}
+                                <option value="">None</option>
                                 {% for instructor in instructors %}
-                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                    <option value={{ instructor.id }}>{{ instructor.firstName}} {{instructor.lastName }}</option>
                                 {% endfor %}
                             {% else %}
                                 <option value="">No instructors available</option>
@@ -79,8 +80,8 @@
                         </select><br><br>
                         <input type="submit" name = "createLabBtn" value="Submit">
                     </form>
-                    {% if messages %}
-                        {{ messages }}
+                    {% if createMessages %}
+                        {{ createMessages }}
                     {% endif %}
                 </div>
             </section>
@@ -188,7 +189,7 @@
                     </form>
                 </div>
 
-                <h2 class="menuTitle">Course and Lab deletion</h2>
+                <h2 class="menuTitle">Course and Lab Deletion</h2>
                 <div class="menuBoxMid">
                     <form>
                         <label for="sectionSelect">Select Section:</label><br>
@@ -203,6 +204,9 @@
                         </select><br>
                         <input type="submit" name = "deleteBtn" value="Delete">
                     </form>
+                    {% if deleteMessages %}
+                        {{ deleteMessages }}
+                    {% endif %}
                 </div>
             </section>
         <!--assign to lab-->

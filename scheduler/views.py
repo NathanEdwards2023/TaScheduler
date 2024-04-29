@@ -35,18 +35,25 @@ def courseManagement(request):
     else:
         if request.method == 'POST' and 'createCourseBtn' in request.POST:
             courseName = request.POST.get('courseName')
-            courseTime = request.POST.get('courseTime')
-            courseDays = request.POST.get('courseDays')
-            instructor = request.POST.get('instructorSelect')
-            ta_ids = request.POST.getlist('taSelect')
-
-            # Create a new CourseTable object
+            instructorId = request.POST.get('instructorSelect')
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             try:
-                admin_page.createCourse(courseName, instructor)
+                admin_page.createCourse(courseName, instructorId)
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                               'messages': "Course successfully created"})
+                               'createMessages': "Course successfully created"})
+            except ValueError as msg:
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'createMessages': msg})
+        elif request.method == 'POST' and 'deleteCourseBtn' in request.POST:
+            courseId = request.POST.get('sectionSelect')
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            try:
+                admin_page.deleteCourse(courseId)
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'deleteMessages': "Course successfully deleted"})
             except ValueError as msg:
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
@@ -66,9 +73,7 @@ def courseManagement(request):
             except UserTable.DoesNotExist:
                 messages.error(request, "Selected TA not found.")
         return redirect('courseManagement')
-
-    return render(request, 'courseManagement.html',
-                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+    return render(request, 'courseManagement.html')
 
 
 def createAccount(request):
@@ -79,11 +84,9 @@ def createAccount(request):
         adminPage = adminAssignmentPage.AdminAssignmentPage()
         accountCreated = adminPage.createAccount(username=username, email=email, password=password)
         if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account created successfully"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
         else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account failed to be created"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
 
     return render(request, 'createAccount.html')
 
