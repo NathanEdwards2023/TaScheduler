@@ -13,6 +13,7 @@ from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 def home(request):
     return render(request, 'home.html')
 
+
 @login_required(login_url='login')
 def courseManagement(request):
     courses = CourseTable.objects.all()
@@ -33,19 +34,39 @@ def courseManagement(request):
             return redirect('home')
 
     else:
-        if request.method == 'POST' and 'createCourseBtn' in request.POST:
-            courseName = request.POST.get('courseName')
-            courseTime = request.POST.get('courseTime')
-            courseDays = request.POST.get('courseDays')
-            instructor = request.POST.get('instructorSelect')
-
-            # Create a new CourseTable object
+        if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
-            try:
-                admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'joinEntries': joinEntries, 'messages': "Course successfully created"})
-            except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'joinEntries': joinEntries, 'messages': msg})
+            if 'createCourseBtn' in request.POST:
+                courseName = request.POST.get('courseName')
+                courseTime = request.POST.get('courseTime')
+                courseDays = request.POST.get('courseDays')
+                instructor = request.POST.get('instructorSelect')
+
+                # Create a new CourseTable object
+                try:
+                    admin_page.createCourse(courseName, instructor)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'messages': "Course successfully created"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'messages': msg})
+
+            if 'createSectionBtn' in request.POST:
+                sectionName = request.POST.get('courseSection')
+                joinTable = request.POST.get('userSectionSelect')
+
+                # Create a new section object
+                try:
+                    msg = admin_page.createSection(sectionName, joinTable)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'messages': msg})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'messages': msg})
         return redirect('courseManagement')
 
 
@@ -57,9 +78,11 @@ def createAccount(request):
         adminPage = adminAssignmentPage.AdminAssignmentPage()
         accountCreated = adminPage.createAccount(username=username, email=email, password=password)
         if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account created successfully"})
         else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account failed to be created"})
 
     return render(request, 'createAccount.html')
 
@@ -98,6 +121,7 @@ class AdminAccManagement(View):
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
                 try:
                     adminPage.createAccount(username=username, email=email, password=password)
-                    return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': "Account created"})
+                    return render(request, 'adminAccManagement.html',
+                                  {'users': users, 'messageCreateAcc': "Account created"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
