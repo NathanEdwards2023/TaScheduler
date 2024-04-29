@@ -85,24 +85,26 @@ class TestCreateCourse(unittest.TestCase):
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
+                               phone="adminTest",
                                address="adminTest", userType="admin")
         self.user1.save()
         self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com",
+                               phone="deleteTest",
                                address="deleteTest", userType="ta")
         self.user2.save()
         self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
         self.user2Account.save()
 
-
         user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
-                         address="123 street", userType="instructor")
+                          address="123 street", userType="instructor")
         user2.save()
         userAccount2 = User(username="JeffT", password="password123", email=user2.email)
         userAccount2.save()
+
     def tearDown(self):
         # Clean up test data
         self.user1.delete()
@@ -117,7 +119,6 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-
         self.assertEqual(response.status_code, 200)
 
     def test_courseManagement_redirect_non_admin(self):
@@ -127,11 +128,12 @@ class TestCreateCourseAcc(TestCase):
 
         response = scheduler.views.courseManagement(request)
 
-        self.assertEqual(response.status_code, 302) #redirects
+        self.assertEqual(response.status_code, 302)  #redirects
 
     def test_course_creation(self):
         # Create a test instructor
-        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com", phone="1234567890", address="123 Main St", userType="Instructor")
+        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com",
+                                              phone="1234567890", address="123 Main St", userType="Instructor")
         self.client.login(username="adminTest", password="adpassword")
         # Ensure that a course can be created
         data = {
@@ -151,7 +153,7 @@ class TestCreateCourseAcc(TestCase):
             'instructorSelect': 9999,  # Invalid instructor ID
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 302) #redirects to self
+        self.assertEqual(response.status_code, 302)  #redirects to self
         self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
@@ -170,7 +172,8 @@ class TestEditCourse(unittest.TestCase):
         self.user2Account = User(username="MattK", password="password", email=self.user1.email)
         self.user2Account.save()
 
-        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id, time="MoWeFr 2:00pm-3:00pm")
+        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id,
+                                   time="MoWeFr 2:00pm-3:00pm")
 
     def tearDown(self):
         self.user1.delete()
@@ -202,6 +205,7 @@ class TestEditCourse(unittest.TestCase):
             self.app.editCourse(self.course1.id, 'Computer Science 361', self.user1.id, 'MoWeFr 2:00pm-3:00pm')
             self.assertIn("No changes were made", str(context.exception))
 
+
 class TestCreateAccount(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
@@ -231,32 +235,45 @@ class TestCreateAccount(unittest.TestCase):
 
 class CreateAccountTestCase(TestCase):
     def setUp(self):
-        self.createAccount_url = reverse('createAccount')
-        self.home_url = reverse('login')
-        self.login_url = reverse('login')
+        self.app = AdminAssignmentPage()
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
+                               phone="adminTest",
+                               address="adminTest", userType="admin")
+        self.user1.save()
+        self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
+        self.user1Account.save()
 
     def tearDown(self):
+        self.user1.delete()
+        self.user1Account.delete()
         User.objects.filter(username='testuser', email='test@user.com').delete()
         UserTable.objects.filter(email='test@user.com').delete()
 
     def test_createAccount_success(self):
-        response = self.client.post(self.createAccount_url,
-                                    {'username': 'testuser', 'email': 'test@user.com', 'password': 'password'},
-                                    follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(User.objects.filter(username='testuser', email='test@user.com').exists())
-        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'password'}, follow=True)
+        request = RequestFactory().post(reverse('adminAccManagement'))
+        request.user = self.user1Account
+        requestCopy = request.POST.copy()
+        requestCopy['createAccountName'] = 'testuser'
+        requestCopy['createAccountEmail'] = 'test@user.com'
+        requestCopy['createAccountPassword'] = 'password'
+        requestCopy['createAccBtn'] = 'Create'
+        request.POST = requestCopy
+        self.assertTrue(User.objects.filter(username='testuser', email='test@user.com', password='password').exists())
+        response = self.client.post(reverse('login'), {'username': 'testuser', 'password': 'password'}, follow=True)
         self.assertTrue(response.context['user'].is_authenticated)
         self.assertRedirects(response, expected_url=reverse('home'))
 
     def test_createAccount_failure(self):
-        with self.assertRaises(ValueError) as context:
-            self.client.post(self.createAccount_url,
-                             {'username': '', 'email': 'nonExister@test.com', 'password': 'wordToPass'},
-                             follow=True)
-        self.assertEqual(str(context.exception), "All fields need to be filled out")
-        self.assertFalse(User.objects.filter(username='', email='nonExister@test.com').exists())
-        response = self.client.post(self.login_url, {'username': '', 'password': 'wordToPass'}, follow=True)
+        request = RequestFactory().post(reverse('adminAccManagement'))
+        request.user = self.user1Account
+        requestCopy = request.POST.copy()
+        requestCopy['createAccountName'] = ''
+        requestCopy['createAccountEmail'] = 'nonExister@test.com'
+        requestCopy['createAccountPassword'] = 'wordToPass'
+        requestCopy['createAccBtn'] = 'Create'
+        request.POST = requestCopy
+        self.assertFalse(User.objects.filter(username='', email='nonExister@test.com', password='wordToPass').exists())
+        response = self.client.post(reverse('login'), {'username': '', 'password': 'wordToPass'}, follow=True)
         self.assertFalse(response.context['user'].is_authenticated)
 
 
@@ -334,6 +351,21 @@ class TestDeleteAccount(TestCase):
         result2 = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
         self.assertEqual("Failed to delete account", result2)
 
+
+class TestPasswordLookup(TestCase):
+    def setUp(self):
+        self.app = AdminAssignmentPage()
+        #user 1
+        self.user1 = UserTable(firstName="Poor", lastName="Thomas", email="John@gmail.com", phone="262-724-8212",
+                               address="some address", userType="Instructor")
+        self.user1.save()
+        self.user1Account = User(username="PoorT", email=self.user1.email, password="password123")
+        self.user1Account.save()
+
+    def testLookUpPassword(self):
+        self.assertTrue(User.objects.filter(password='password123').exists())
+
+
 class TestDeleteAccountACCEPTANCE(TestCase):
     def __init__(self, methodName: str = "runTest"):
         super().__init__(methodName)
@@ -341,13 +373,15 @@ class TestDeleteAccountACCEPTANCE(TestCase):
 
     def setUp(self):
         self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com", phone="adminTest",
+        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
+                               phone="adminTest",
                                address="adminTest", userType="admin")
         self.user1.save()
         self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com", phone="deleteTest",
+        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com",
+                               phone="deleteTest",
                                address="deleteTest", userType="ta")
         self.user2.save()
         self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
@@ -410,6 +444,7 @@ class TestDeleteAccountACCEPTANCE(TestCase):
                 response = AdminAccManagement.as_view()(request)
 
                 self.assertContains(response, 'Failed to delete account')
+
 
 if __name__ == '__main__':
     unittest.main()

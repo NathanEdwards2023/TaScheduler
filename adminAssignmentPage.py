@@ -41,7 +41,7 @@ class AdminAssignmentPage:
             raise ValueError("Password must be at least 8 characters long")
 
         if User.objects.filter(email=email).exists():
-            raise ValueError("User with this email already exists")
+            raise ValueError("User already exists")
 
         newAccount = User.objects.create_user(username=username, email=email, password=password)
         newUser = UserTable(email=email)
