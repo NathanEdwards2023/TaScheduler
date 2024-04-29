@@ -519,5 +519,61 @@ class TestCreateLabSection(unittest.TestCase):
         self.assertFalse(result)
 
 
+class AssignTATests(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_user('admin', 'admin@example.com', 'adminpass', is_staff=True)
+        self.client.login(username='admin', password='adminpass')
+
+        self.instructor = UserTable.objects.create(firstName="Instructor", lastName="Smith",
+                                                   email="instructor@example.com", userType="Instructor")
+        self.ta = UserTable.objects.create(firstName="TA", lastName="Johnson", email="ta@example.com",
+                                           userType="TA")
+        self.course = CourseTable.objects.create(courseName="Calculus", time="09:00 AM")
+
+    def test_assign_ta_to_course_success(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(CourseTA.objects.filter(course=self.course, ta=self.ta).exists())
+
+    def test_assign_ta_to_nonexistent_course(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': 999,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(CourseTA.objects.filter(course_id=999, ta=self.ta).exists())
+
+    def test_assign_nonexistent_ta_to_course(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': 999,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(CourseTA.objects.filter(course=self.course, ta_id=999).exists())
+
+    def test_assign_ta_to_course_without_permissions(self):
+        self.client.logout()
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertNotEqual(response.status_code, 200)
+
+
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

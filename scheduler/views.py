@@ -15,7 +15,6 @@ def home(request):
     return render(request, 'home.html')
 
 
-@login_required(login_url='login')
 def courseManagement(request):
     courses = CourseTable.objects.all()
     TAs = UserTable.objects.filter(userType="TA")
@@ -57,14 +56,13 @@ def courseManagement(request):
             except ValueError as msg:
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                               'messages': msg})
+                               'deleteMessages': msg})
         elif 'assignTAToCourseBtn' in request.POST:  # This is the new part to handle TA assignment to courses
             course_id = request.POST.get('taCourseSelect')
             ta_id = request.POST.get('taSelect')
             try:
                 course = CourseTable.objects.get(pk=course_id)
                 ta = UserTable.objects.get(pk=ta_id)
-                # Here, handle the association, assuming it's a ManyToManyField for TAs
                 CourseTA.objects.create(course=course, ta=ta)
 
                 messages.success(request, "TA successfully assigned to course.")
@@ -84,9 +82,11 @@ def createAccount(request):
         adminPage = adminAssignmentPage.AdminAssignmentPage()
         accountCreated = adminPage.createAccount(username=username, email=email, password=password)
         if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account created successfully"})
         else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account failed to be created"})
 
     return render(request, 'createAccount.html')
 
