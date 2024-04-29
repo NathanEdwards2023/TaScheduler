@@ -6,7 +6,8 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+
 
 @login_required(login_url='login')
 def home(request):
@@ -15,16 +16,18 @@ def home(request):
 @login_required(login_url='login')
 def courseManagement(request):
     courses = CourseTable.objects.all()
-    TAs = UserTable.objects.filter(userType="TA")
-    instructors = UserTable.objects.filter(userType="Instructor")
+    TAs = UserTable.objects.filter(userType="ta")
+    instructors = UserTable.objects.filter(userType="instructor")
     labs = LabTable.objects.all()
+    joinEntries = UserCourseJoinTable.objects.all()
 
     if request.method == 'GET':
         user = request.user
         accRole = UserTable.objects.get(email=user.email).userType
         if user.is_authenticated and accRole == 'admin':
             return render(request, 'courseManagement.html',
-                          {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+                          {'courses': courses, 'TAs': TAs, 'instructors': instructors,
+                           'joinEntries': joinEntries, 'labs': labs})
         else:
             # Redirect non-admin users to another page (e.g., home page)
             return redirect('home')
@@ -40,11 +43,10 @@ def courseManagement(request):
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             try:
                 admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'joinEntries': joinEntries, 'messages': "Course successfully created"})
             except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'joinEntries': joinEntries, 'messages': msg})
         return redirect('courseManagement')
-    return render(request, 'courseManagement.html')
 
 
 def createAccount(request):

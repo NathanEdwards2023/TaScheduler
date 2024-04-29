@@ -370,11 +370,11 @@ class TestGetRole(unittest.TestCase):
         self.app = AdminAssignmentPage()
         # Create a test user for each test case
         self.ins = UserTable(firstName="Matt", lastName="Matt", email="insTest@gmail.com", phone="262-555-5555",
-                               address="Some address", userType="instructor")
+                             address="Some address", userType="instructor")
         self.ins.save()
 
         self.ta = UserTable(firstName="Matt", lastName="Matt", email="taTest@gmail.com", phone="262-555-5555",
-                               address="Some address", userType="ta")
+                            address="Some address", userType="ta")
         self.ta.save()
 
         self.admin = UserTable(firstName="Matt", lastName="Matt", email="adminTest@gmail.com", phone="262-555-5555",
@@ -411,6 +411,7 @@ class TestGetRole(unittest.TestCase):
         # Test getting role with no email
         role = self.app.getRole("")
         self.assertIsNone(role)
+
 
 class TestCreateSection(unittest.TestCase):
     def setUp(self):
@@ -451,7 +452,6 @@ class TestCreateSection(unittest.TestCase):
     def test_createSection_emptySectionName(self):
         with self.assertRaises(ValueError):
             self.app.createSection("", self.joinTable.id)
-
 
 
 if __name__ == '__main__':

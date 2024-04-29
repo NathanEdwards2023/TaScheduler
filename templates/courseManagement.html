@@ -35,7 +35,7 @@
         <div class="menuContainer">
         <!--course creation-->
             <section>
-                <h2 class="menuTitle">Course and Lab Creation</h2>
+                <h2 class="menuTitle">Course, Course Section and Lab Creation</h2>
                 <div class="menuBox">
                     <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
@@ -51,7 +51,23 @@
                                 <option value="">No instructors available</option>
                             {% endif %}
                         </select><br><br>
-                        <input type="submit" name = "createCourseBtn" value="Submit">
+                        <input type="submit" name = "createCourseBtn" value="Create Course">
+                    </form>
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
+                        <label for="courseSection">Course Section:</label><br>
+                        <input type="text" id="courseSection" name="courseSection"><br>
+                        <label for="userSectionSelect">User:</label><br>
+                        <select id="userSectionSelect" name="userSectionSelect">
+                            {% if joinEntries %}
+                                {% for joinEntry in joinEntries %}
+                                    <option value="{{ joinEntry.id }}">{{ joinEntry.UserTable.firstName}} {{joinEntry.UserTable.lastName }} {{joinEntry.CourseTable.courseName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No course-user entries available</option>
+                            {% endif %}
+                        </select><br><br>
+                        <input type="submit" name = "createSection" value="Create Course Section">
                     </form>
                     <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
@@ -77,7 +93,7 @@
                                 <option value="">No TAs available</option>
                             {% endif %}
                         </select><br><br>
-                        <input type="submit" name = "createLabBtn" value="Submit">
+                        <input type="submit" name = "createLabBtn" value="Create Lab Section">
                     </form>
                     {% if messages %}
                         {{ messages }}
