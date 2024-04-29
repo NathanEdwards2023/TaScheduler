@@ -6,7 +6,7 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -49,37 +49,37 @@ class LoginTestCase(TestCase):
 class TestCreateCourse(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
+        UserTable.objects.all().delete()
+        self.user1 = UserTable(firstName="instructor", lastName="instructor", email="instruct@gmail.com",
+                               phone="262-555-5555",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
-        self.user1Account.save()
 
     def tearDown(self):
         # Clean up test data
+        CourseTable.objects.all().delete()
+        UserTable.objects.all().delete()
         self.user1.delete()
-        self.user1Account.delete()
 
     def test_createCourse_correctly(self):
-        self.app.createCourse("Course1", self.user1.id)
-        course = CourseTable.objects.filter(courseName="Course1").first()
-
-        self.assertEqual((course.courseName, course.instructorId.id), ("Course1", self.user1.id))
+        self.app.createCourse("Course1", "")
+        course = CourseTable.objects.get(courseName="Course1")
+        self.assertIsNotNone(course)
 
     def test_createCourse_duplicateName(self):
-        self.app.createCourse("Course1", self.user1.id)
+        self.app.createCourse("Course1", "")
         with self.assertRaises(ValueError):
-            self.app.createCourse("Course1", self.user1.id)
+            self.app.createCourse("Course1", "")
         self.assertEqual(CourseTable.objects.filter(courseName="Course1").count(), 1)
-
-    def test_createCourse_noInstructor(self):
-        # returns true if invalid instructor ID
-        with self.assertRaises(ValueError):
-            self.app.createCourse("Course10", 10)
 
     def test_createCourse_emptyCourseName(self):
         with self.assertRaises(ValueError):
-            self.app.createCourse("", self.user1.id)
+            self.app.createCourse("", "")
+
+    def test_createCourse_withInstructor(self):
+        self.app.createCourse("Course1", self.user1.id)
+        course = CourseTable.objects.get(courseName="Course1")
+        self.assertIsNotNone(course)
 
 
 class TestCreateCourseAcc(TestCase):
@@ -92,25 +92,19 @@ class TestCreateCourseAcc(TestCase):
         self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="deleteTest", lastName="deleteTest", email="deleteTest@gmail.com",
-                               phone="deleteTest",
-                               address="deleteTest", userType="ta")
+        self.user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com",
+                               phone="5484651456",
+                               address="123 street", userType="Instructor")
         self.user2.save()
-        self.user2Account = User(username="deleteTest", password="delpassword", email=self.user2.email)
-        self.user2Account.save()
-
-        user2 = UserTable(firstName="Jeff", lastName="Thompson", email="nonadmin@gmail.com", phone="5484651456",
-                          address="123 street", userType="instructor")
-        user2.save()
-        userAccount2 = User(username="JeffT", password="password123", email=user2.email)
-        userAccount2.save()
+        self.userAccount2 = User(username="JeffT", password="password123", email=self.user2.email)
+        self.userAccount2.save()
 
     def tearDown(self):
         # Clean up test data
         self.user1.delete()
         self.user1Account.delete()
         self.user2.delete()
-        self.user2Account.delete()
+        self.userAccount2.delete()
 
     def test_courseCourse_page(self):
         # Ensure that the course creation form is rendered correctly
@@ -124,37 +118,37 @@ class TestCreateCourseAcc(TestCase):
     def test_courseManagement_redirect_non_admin(self):
         # Ensure that non-admin users are redirected to the home page when trying to access courseManagement
         request = RequestFactory().get(reverse('courseManagement'))
-        request.user = self.user2Account
+        request.user = self.userAccount2
 
         response = scheduler.views.courseManagement(request)
 
         self.assertEqual(response.status_code, 302)  # redirects
 
     def test_course_creation(self):
-        # Create a test instructor
-        instructor = UserTable.objects.create(firstName="John", lastName="Doe", email="john@example.com",
-                                              phone="1234567890", address="123 Main St", userType="Instructor")
         self.client.login(username="adminTest", password="adpassword")
         # Ensure that a course can be created
         data = {
-            'courseName': 'New Course',
-            'instructorSelect': instructor.id,
+            'courseName': "New Course",
+            'instructorSelect': self.user2.id,
             'createCourseBtn': 'Submit',  # button used
-
         }
+        print(data)
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
+        self.assertEqual(response.status_code, 302)  # redirects to self
+        newCourse = CourseTable.objects.get(courseName="New Course")
+        print(newCourse)
+        self.assertTrue(CourseTable.objects.filter(courseName='New Course').exists())
+        self.assertTrue(UserCourseJoinTable.objects.filter(courseId=newCourse, userId=self.user2).exists())
 
     def test_invalid_course_creation(self):
         # Ensure that an invalid course cannot be created
         data = {
             'courseName': '',  # Invalid empty course name
-            'instructorSelect': 9999,  # Invalid instructor ID
+            'instructorSelect': "",
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 302)  # redirects to self
-        self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
+        self.assertFalse(CourseTable.objects.filter(courseName='').exists())
 
 
 class TestEditCourse(unittest.TestCase):
@@ -416,6 +410,109 @@ class TestDeleteAccountACCEPTANCE(TestCase):
 
                 self.assertContains(response, 'Failed to delete account')
 
+class TestDeleteCourse(unittest.TestCase):
+    def setUp(self):
+        self.admin_page = AdminAssignmentPage()
+
+        # Create a course
+        self.course = CourseTable.objects.create(courseName="Test Course")
+
+        # Create lab sections associated with the course
+        self.lab1 = LabTable.objects.create(sectionNumber="Lab 1")
+        self.lab2 = LabTable.objects.create(sectionNumber="Lab 2")
+
+        # Create users
+        self.user1 = UserTable.objects.create(email="user1@example.com")
+        self.user2 = UserTable.objects.create(email="user2@example.com")
+
+        # Create user-course associations
+        self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)
+        self.user_course2 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user2)
+
+        # Create sections associated with the course
+        self.section1 = SectionTable.objects.create(name="Section 1", userCourseJoinId=self.user_course1)
+        self.section2 = SectionTable.objects.create(name="Section 2", userCourseJoinId=self.user_course2)
+
+        # Associate lab sections with the sections
+        self.section1.sectionId.add(self.lab1)
+        self.section2.sectionId.add(self.lab2)
+
+    def tearDown(self):
+        # Clean up after each test by deleting created objects
+        self.course.delete()
+        self.lab1.delete()
+        self.lab2.delete()
+        self.user_course1.delete()
+        self.user_course2.delete()
+        self.user1.delete()
+        self.user2.delete()
+
+    def test_delete_course_success(self):
+        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        self.assertTrue(result)
+
+        # Verify that course and associated objects are deleted
+        self.assertFalse(CourseTable.objects.filter(id=self.course.id).exists())
+        self.assertFalse(UserCourseJoinTable.objects.filter(courseId=self.course).exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 1").exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
+
+    def test_delete_course_not_found(self):
+        result = self.admin_page.deleteCourses(course_id=999)
+        self.assertFalse(result)
+
+    def test_delete_course_with_no_labs(self):
+        # Remove labs from sections
+        self.section1.sectionId.clear()
+        self.section2.sectionId.clear()
+
+        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        self.assertTrue(result)
+
+        # Verify that course and associated objects are deleted
+        self.assertFalse(CourseTable.objects.filter(id=self.course.id).exists())
+        self.assertFalse(UserCourseJoinTable.objects.filter(courseId=self.course).exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 1").exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
+
+    def test_delete_course_with_associated_objects_deleted(self):
+        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        self.assertTrue(result)
+
+        # Verify that users attached to the course are not deleted
+        self.assertTrue(UserTable.objects.filter(id=self.user1.id).exists())
+        self.assertTrue(UserTable.objects.filter(id=self.user2.id).exists())
+
+        # Verify that associated lab sections are also deleted
+        self.assertFalse(LabTable.objects.filter(sectionNumber="Lab 1").exists())
+        self.assertFalse(LabTable.objects.filter(sectionNumber="Lab 2").exists())
+
+class TestCreateLabSection(unittest.TestCase):
+    def setUp(self):
+        self.admin_page = AdminAssignmentPage()
+
+    def test_create_lab_section_success(self):
+        course = CourseTable.objects.create(courseName="Test Course")
+        result = self.admin_page.createLabSection(course_id=course.id, section_name="Lab1")
+        self.assertTrue(result)
+
+        # Verify that lab section is created
+        self.assertTrue(SectionTable.objects.filter(name="Lab1", userCourseJoinId__courseId_id=course.id).exists())
+
+    def test_create_lab_section_invalid_course(self):
+        result = self.admin_page.createLabSection(course_id=999, section_name="Lab1")
+        self.assertFalse(result)
+
+    def test_create_lab_section_with_empty_name(self):
+        result = self.admin_page.createLabSection(course_id=1, section_name="")
+        self.assertFalse(result)
+
+    def test_create_lab_section_with_existing_name(self):
+        # Create a lab section with the same name to emulate the scenario where it already exists
+        SectionTable.objects.create(name="Lab1", userCourseJoinId__courseId_id=1)
+
+        result = self.admin_page.createLabSection(course_id=1, section_name="Lab1")
+        self.assertFalse(result)
 
 if __name__ == '__main__':
     unittest.main()

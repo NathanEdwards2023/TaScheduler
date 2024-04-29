@@ -32,17 +32,30 @@ def courseManagement(request):
     else:
         if request.method == 'POST' and 'createCourseBtn' in request.POST:
             courseName = request.POST.get('courseName')
-            courseTime = request.POST.get('courseTime')
-            courseDays = request.POST.get('courseDays')
-            instructor = request.POST.get('instructorSelect')
-
-            # Create a new CourseTable object
+            instructorId = request.POST.get('instructorSelect')
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             try:
-                admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+                admin_page.createCourse(courseName, instructorId)
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'createMessages': "Course successfully created"})
             except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'createMessages': msg})
+        elif request.method == 'POST' and 'deleteCourseBtn' in request.POST:
+            courseId = request.POST.get('sectionSelect')
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            try:
+                admin_page.deleteCourse(courseId)
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'deleteMessages': "Course successfully deleted"})
+            except ValueError as msg:
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'deleteMessages': msg})
+
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
 
