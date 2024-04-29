@@ -6,7 +6,7 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, CourseTA
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -172,7 +172,8 @@ class TestEditCourse(unittest.TestCase):
         self.user2Account = User(username="MattK", password="password", email=self.user1.email)
         self.user2Account.save()
 
-        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id, time="MoWeFr 2:00pm-3:00pm")
+        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id,
+                                   time="MoWeFr 2:00pm-3:00pm")
 
     def tearDown(self):
         self.user1.delete()
@@ -203,6 +204,7 @@ class TestEditCourse(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             self.app.editCourse(self.course1.id, 'Computer Science 361', self.user1.id, 'MoWeFr 2:00pm-3:00pm')
             self.assertIn("No changes were made", str(context.exception))
+
 
 class TestCreateAccount(unittest.TestCase):
     def setUp(self):
@@ -415,6 +417,97 @@ class TestDeleteAccountACCEPTANCE(TestCase):
                 response = AdminAccManagement.as_view()(request)
 
                 self.assertContains(response, 'Failed to delete account')
+
+
+class AssignTATests(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_user('admin', 'admin@example.com', 'adminpass', is_staff=True)
+        self.client.login(username='admin', password='adminpass')
+
+        self.instructor = UserTable.objects.create(firstName="Instructor", lastName="Smith",
+                                                   email="instructor@example.com", userType="Instructor")
+        self.ta = UserTable.objects.create(firstName="TA", lastName="Johnson", email="ta@example.com",
+                                           userType="TA")
+        self.course = CourseTable.objects.create(courseName="Calculus", time="09:00 AM")
+
+    def test_assign_ta_to_course_success(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(CourseTA.objects.filter(course=self.course, ta=self.ta).exists())
+
+    def test_assign_ta_to_nonexistent_course(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': 999,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(CourseTA.objects.filter(course_id=999, ta=self.ta).exists())
+
+    def test_assign_nonexistent_ta_to_course(self):
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': 999,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(CourseTA.objects.filter(course=self.course, ta_id=999).exists())
+
+    def test_assign_ta_to_course_without_permissions(self):
+        self.client.logout()
+        url = reverse('courseManagement')
+        response = self.client.post(url, {
+            'taCourseSelect': self.course.id,
+            'taSelect': self.ta.id,
+            'assignTAToCourseBtn': 'Submit'
+        })
+        self.assertNotEqual(response.status_code, 200)
+
+
+class AssignTAToLabTests(TestCase):
+    def setup(self):
+        self.admin = User.objects.create_user(username='admin', email='admin@test.com', password='adminpass',
+                                              is_staff=True)
+        self.instructor = User.objects.create_user(username='instructor', email='instructor@test.com',
+                                                   password='instructorpass', is_staff=True)
+        self.ta = UserTable.objects.create(firstName='TA', lastName='User', email='ta@test.com', userType='TA')
+        self.course = CourseTable.objects.create(courseName='Intro to Testing')
+        self.lab = LabTable.objects.create(sectionNumber='101', courseId=self.course)
+
+        self.course.instructorId = self.instructor
+        self.course.save()
+
+    def test_assign_ta_to_lab_by_instructor(self):
+        self.client.login(username='instructor', password='instructorpass')
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(LabTable.objects.filter(taId=self.ta, courseId=self.lab.courseId).exists())
+
+    def test_prevent_double_assignment_of_ta_to_lab(self):
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=self.ta)
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertIn('This TA is already assigned to this lab', response.context.get('messages', []))
+
+    def test_prevent_unauthorized_user_from_assigning_ta(self):
+        regular_user = User.objects.create_user(username='regular', email='regular@test.com', password='regularpass',
+                                                is_staff=False)
+        self.client.login(username='regular', password='regularpass')
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertEqual(response.status_code, 403)
+
+    def test_lab_section_limits_one_ta(self):
+        another_ta = UserTable.objects.create(firstName='AnotherTA', lastName='User', email='anotherta@test.com',
+                                              userType='TA')
+        LabTable.objects.create(sectionNumber='101', courseId=self.course, taId=another_ta)
+        response = self.client.post(reverse('assign_ta_to_lab'), {'taId': self.ta.id, 'labId': self.lab.id})
+        self.assertIn('Lab section already has a TA.', response.context.get('messages', []))
 
 
 if __name__ == '__main__':

@@ -4,9 +4,11 @@ from django.shortcuts import render, redirect
 from django.views import View
 from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable
+from .models import CourseTable, UserTable, LabTable, CourseTA
+
 
 @login_required(login_url='login')
 def home(request):
@@ -43,8 +45,23 @@ def courseManagement(request):
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
             except ValueError as msg:
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+        elif 'assignTAToCourseBtn' in request.POST:
+                course_id = request.POST.get('courseId')
+                ta_id = request.POST.get('taId')
+                try:
+                    course = CourseTable.objects.get(pk=course_id)
+                    ta = UserTable.objects.get(pk=ta_id)
+                    CourseTA.objects.create(course=course, ta=ta)
+                    messages.success(request, "TA successfully assigned to course.")
+                except CourseTable.DoesNotExist:
+                    messages.error(request, "Selected course not found.")
+                except UserTable.DoesNotExist:
+                    messages.error(request, "Selected TA not found.")
         return redirect('courseManagement')
-    return render(request, 'courseManagement.html')
+
+    return render(request, 'courseManagement.html',
+                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs})
+
 
 
 def createAccount(request):
