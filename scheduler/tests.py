@@ -1,12 +1,13 @@
 import unittest
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -50,7 +51,7 @@ class TestCreateCourse(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
-                               address="some address", userType="Instructor")
+                               address="some address", userType="instructor")
         self.user1.save()
         self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
         self.user1Account.save()
@@ -415,6 +416,95 @@ class TestDeleteAccountACCEPTANCE(TestCase):
                 response = AdminAccManagement.as_view()(request)
 
                 self.assertContains(response, 'Failed to delete account')
+
+
+class TestGetRole(unittest.TestCase):
+    def setUp(self):
+        self.app = AdminAssignmentPage()
+        # Create a test user for each test case
+        self.ins = UserTable(firstName="Matt", lastName="Matt", email="insTest@gmail.com", phone="262-555-5555",
+                             address="Some address", userType="instructor")
+        self.ins.save()
+
+        self.ta = UserTable(firstName="Matt", lastName="Matt", email="taTest@gmail.com", phone="262-555-5555",
+                            address="Some address", userType="ta")
+        self.ta.save()
+
+        self.admin = UserTable(firstName="Matt", lastName="Matt", email="adminTest@gmail.com", phone="262-555-5555",
+                               address="Some address", userType="admin")
+        self.admin.save()
+
+    def tearDown(self):
+        # Clean up test data after each test case
+        self.ins.delete()
+        self.ta.delete()
+        self.admin.delete()
+
+    def test_getRole_instructor(self):
+        # Test getting role for instructor
+        role = self.app.getRole("insTest@gmail.com")
+        self.assertEqual(role, "instructor")
+
+    def test_getRole_ta(self):
+        # Test getting role for ta
+        role = self.app.getRole("taTest@gmail.com")
+        self.assertEqual(role, "ta")
+
+    def test_getRole_admin(self):
+        # Test getting role for admin
+        role = self.app.getRole("adminTest@gmail.com")
+        self.assertEqual(role, "admin")
+
+    def test_getRole_fakeUser(self):
+        # Test getting role for user that does not exist
+        role = self.app.getRole("randomEmail@something.com")
+        self.assertIsNone(role)
+
+    def test_getRole_noEmail(self):
+        # Test getting role with no email
+        role = self.app.getRole("")
+        self.assertIsNone(role)
+
+
+class TestCreateSection(unittest.TestCase):
+    def setUp(self):
+        self.app = AdminAssignmentPage()
+        self.user1 = UserTable(firstName="matt", lastName="matt", email="matt@gmail.com", phone="262-555-5555",
+                               address="some address", userType="instructor")
+        self.user1.save()
+        self.user1Account = User(username="matt", password="e121dfa91w", email=self.user1.email)
+        self.user1Account.save()
+
+        self.course1 = CourseTable(courseName="unitTest")
+        self.course1.save()
+        self.joinTable = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
+        self.joinTable.save()
+
+    def tearDown(self):
+        # Clean up test data
+        self.user1.delete()
+        self.user1Account.delete()
+        self.course1.delete()
+        self.joinTable.delete()
+
+    def test_createSection_correctly(self):
+        self.app.createSection("SectionUnitTest1", self.joinTable.id)
+        section = SectionTable.objects.filter(name="SectionUnitTest1").first()
+
+        self.assertEqual((section.name, section.userCourseJoinId.id), ("SectionUnitTest1", self.joinTable.id))
+
+    def test_createSection_noJoinTable(self):
+        # returns true if invalid Join table ID
+        for joinTableID in range(1, 9999):
+            try:
+                UserCourseJoinTable.objects.get(id=joinTableID)
+            except User.DoesNotExist:
+                with self.assertRaises(ValueError):
+                    self.app.createSection("SectionUnitTest1", joinTableID)
+
+    def test_createSection_emptySectionName(self):
+        with self.assertRaises(ValueError):
+            self.app.createSection("", self.joinTable.id)
 
 
 if __name__ == '__main__':
