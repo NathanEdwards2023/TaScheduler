@@ -6,6 +6,7 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
+
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
@@ -57,26 +58,16 @@ def courseManagement(request):
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'deleteMessages': msg})
-        elif request.method == 'POST':
-            if 'assignTAToCourseBtn' in request.POST:
-                course_id = request.POST.get(
-                    'courseId')  # Ensure this matches your HTML form's input name for the course ID
-                ta_id = request.POST.get('taId')  # Ensure this matches your HTML form's input name for the TA ID
+        elif 'assignTAToCourseBtn' in request.POST:
+            course_id = request.POST.get('courseId')
+            user_id = request.POST.get('userId')  # Note the changed parameter name
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            success, message = admin_page.assignTAToCourse(course_id, user_id)
 
-                try:
-                    course = CourseTable.objects.get(pk=course_id)
-                    ta = UserTable.objects.get(pk=ta_id)
-
-                    UserCourseJoinTable.objects.update_or_create(
-                        courseId=course,
-                        userId=ta,
-                        defaults={'role': 'TA'}
-                    )
-                    messages.success(request, "TA successfully assigned to course.")
-                except CourseTable.DoesNotExist:
-                    messages.error(request, "Selected course not found.")
-                except UserTable.DoesNotExist:
-                    messages.error(request, "Selected TA not found.")
+            if success:
+                messages.success(request, message)
+            else:
+                messages.error(request, message)
 
             return redirect('courseManagement')
 

@@ -85,7 +85,7 @@
                     {% endif %}
                 </div>
             </section>
-        <!-- Assign TA to Course Section -->
+<!-- Assign TA to Course Section -->
 <section>
     <h2 class="menuTitle">Assign TA to Course</h2>
     <div class="menuBox">
@@ -103,7 +103,7 @@
             </div>
             <div class="form-group">
                 <label for="taSelectCourse">Select TA:</label>
-                <select id="taSelectCourse" name="taId" required>
+                <select id="taSelectCourse" name="userId" required> <!-- Updated the name attribute -->
                     {% for ta in TAs %}
                         <option value="{{ ta.id }}">{{ ta.firstName }} {{ ta.lastName }}</option>
                     {% empty %}

@@ -127,8 +127,21 @@ class AdminAssignmentPage:
         pass
 
     def assignTAToCourse(self, course_id, user_id):
-        # Assign a TA to a course
-        pass
+        try:
+            course = CourseTable.objects.get(pk=course_id)
+            ta = UserTable.objects.get(pk=user_id, userType='TA')  # Ensuring the user is a TA
+            # Check if the TA is already assigned to avoid duplicates
+            existing_assignment = UserCourseJoinTable.objects.filter(courseId=course, userId=ta)
+            if existing_assignment.exists():
+                return False, "TA is already assigned to this course."
+
+            assignment = UserCourseJoinTable(courseId=course, userId=ta, role='TA')
+            assignment.save()
+            return True, "TA successfully assigned to course."
+        except CourseTable.DoesNotExist:
+            return False, "Course not found."
+        except UserTable.DoesNotExist:
+            return False, "TA not found or not eligible."
 
     def assignTAToLab(self, lab_id, user_id):
         # Assign a TA to a lab
