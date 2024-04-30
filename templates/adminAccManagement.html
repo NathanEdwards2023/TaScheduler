@@ -12,11 +12,11 @@
 <header>
     <nav>
         <ul>
-            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="#">Home</a></li>
             <li><a href="#">Profile</a></li>
             <li><a href="#">Notifications</a></li>
-            <li><a href="{% url 'courseManagement' %}">Course Management</a></li>
-            <li><a href="{% url 'adminAccManagement' %}">Account Management</a></li>
+            <li><a href="#">Course Management</a></li>
+            <li><a href="#">Account Management</a></li>
             <li><a href="#">Settings</a></li>
         </ul>
     </nav>
@@ -48,7 +48,7 @@
                     <input type="submit" name="createAccBtn" value="Create Account">
                 </form>
             </div>
-            {% if messageCreateAcc %}
+                        {% if messageCreateAcc %}
                 <div class="accountCreatedMsg">
                     <span class="closeAccCreatedBtn" onclick="this.parentElement.style.display='none';">&times;</span>
                     <p>{{ messageCreateAcc }}</p>
@@ -69,24 +69,24 @@
                     {% csrf_token %}
                     <label for="deleteAccountName">Enter Account Name:</label><br>
                     <select id="deleteAccountName" name="deleteAccountName">
-                        {% if users %}
-                            {% for user in users %}
-                                <option value="{{ user.id }}">{{ user.username }}</option>
-                            {% endfor %}
-                        {% else %}
-                            <option value="">No username available</option>
-                        {% endif %}
-                    </select><br><br>
+                            {% if users %}
+                                {% for user in users %}
+                                    <option value="{{ user.id }}">{{user.username}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No username available</option>
+                            {% endif %}
+                        </select><br><br>
                     <label for="deleteAccountEmail">Enter Account Email:</label><br>
                     <select id="deleteAccountEmail" name="deleteAccountEmail">
-                        {% if users %}
-                            {% for user in users %}
-                                <option value="{{ user.id }}">{{ user.email }}</option>
-                            {% endfor %}
-                        {% else %}
-                            <option value="">No username available</option>
-                        {% endif %}
-                    </select><br><br>
+                            {% if users %}
+                                {% for user in users %}
+                                    <option value="{{ user.id }}">{{ user.email}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No username available</option>
+                            {% endif %}
+                        </select><br><br>
                     <input type="submit" name="deleteAccBtn" value="Delete Account">
                 </form>
             </div>
