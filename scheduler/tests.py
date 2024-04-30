@@ -166,7 +166,8 @@ class TestEditCourse(unittest.TestCase):
         self.user2Account = User(username="MattK", password="password", email=self.user1.email)
         self.user2Account.save()
 
-        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id, time="MoWeFr 2:00pm-3:00pm")
+        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id,
+                                   time="MoWeFr 2:00pm-3:00pm")
 
     def tearDown(self):
         self.user1.delete()
@@ -197,6 +198,7 @@ class TestEditCourse(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             self.app.editCourse(self.course1.id, 'Computer Science 361', self.user1.id, 'MoWeFr 2:00pm-3:00pm')
             self.assertIn("No changes were made", str(context.exception))
+
 
 class TestCreateAccount(unittest.TestCase):
     def setUp(self):
@@ -410,6 +412,7 @@ class TestDeleteAccountACCEPTANCE(TestCase):
 
                 self.assertContains(response, 'Failed to delete account')
 
+
 class TestDeleteCourse(unittest.TestCase):
     def setUp(self):
         self.admin_page = AdminAssignmentPage()
@@ -486,6 +489,7 @@ class TestDeleteCourse(unittest.TestCase):
         # Verify that associated lab sections are also deleted
         self.assertFalse(LabTable.objects.filter(sectionNumber="Lab 1").exists())
         self.assertFalse(LabTable.objects.filter(sectionNumber="Lab 2").exists())
+
 
 class TestCreateLabSection(unittest.TestCase):
     def setUp(self):
