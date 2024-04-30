@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable
+from scheduler.models import UserTable, CourseTable, LabTable
 import re
 
 class AdminAssignmentPage:
@@ -90,24 +90,6 @@ class AdminAssignmentPage:
         # Assign a TA to a lab
         pass
 
-    @staticmethod
-    def getRole(email):
-        try:
-            return UserTable.objects.get(email=email).userType
-        except ObjectDoesNotExist:
-            return None
-
-    @staticmethod
-    def createSection(sectionName, joinTableId):
-        # Create a new course section
-        try:
-            joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
-            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId, name=sectionName).first()
-            if existingCourseSection:
-                raise ValueError("Section already exists")
-            elif sectionName == "":
-                raise ValueError("Invalid course name")
-            SectionTable.objects.create(name=sectionName, userCourseJoinId=joinTable)
-            return "Section created successfully"
-        except ObjectDoesNotExist:
-            return "Failed to create section"
+    def getRole(self, email):
+        # get the accs role
+        pass
