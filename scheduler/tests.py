@@ -164,17 +164,12 @@ class TestEditCourse(unittest.TestCase):
         self.user1 = UserTable(firstName="Rory", lastName="Christlieb", email="RoryC@gmail.com", phone="123-455-5555",
                                address="some address", userType="Instructor")
         self.user1.save()
-        self.user1Account = User(username="RoryC", password="password", email=self.user1.email)
+        self.user1Account = User(username="RoryC", password="password", email=user1.email)
         self.user1Account.save()
 
-        self.user2 = UserTable(firstName="Matt", lastName="Kretsch", email="MattK@gmail.com", phone="123-455-5555",
-                               address="some address", userType="Instructor")
-        self.user2.save()
-        self.user2Account = User(username="MattK", password="password", email=self.user2.email)
-        self.user2Account.save()
-
-        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=self.user1.id,
+        self.course1 = CourseTable(courseName="Computer Science 361", instructorId=user1.id,
                                    time="MoWeFr 2:00pm-3:00pm")
+        self.course1.save()
 
     def tearDown(self):
         self.user1.delete()
@@ -184,27 +179,23 @@ class TestEditCourse(unittest.TestCase):
     def test_editCourse_success(self):
         newCourseName = 'Computer Science 362'
         newTime = 'TuTh 2:30pm - 3:30pm'
-        self.app.editCourse(self.course1.id, newCourseName, self.user2.id, newTime)
+        self.app.editCourse(self.course1.id, newCourseName, newTime)
         editedCourse = CourseTable.objects.get(id=self.course1.id)
         self.assertEqual(editedCourse.courseName, newCourseName)
         self.assertEqual(editedCourse.time, newTime)
 
     def test_editCourse_nonexistentCourse(self):
         with self.assertRaises(ValueError):
-            self.app.editCourse(999999, 'Computer Science 362', self.user1.id, 'TuTh 2:30pm - 3:30pm')
+            self.app.editCourse(999999, 'Computer Science 362', 'TuTh 2:30pm - 3:30pm')
 
     def test_editCourse_emptyCourseName(self):
         with self.assertRaises(ValueError):
-            self.app.editCourse(self.course1, '', self.user1.id, 'TuTh 2:30pm - 3:30pm')
-
-    def test_editCourse_invalidInstructor(self):
-        with self.assertRaises(ValueError):
-            self.app.editCourse(self.course1, 'Computer Science 362', 999, 'TuTh 2:30pm - 3:30pm')
+            self.app.editCourse(self.course1, '', 'TuTh 2:30pm - 3:30pm')
 
     def test_editCourse_noActualChanges(self):
         newCourseName = 'Computer Science 361'
         newTime = 'MonWeFr 2:00pm - 3:00pm'
-        self.app.editCourse(self.course1.id, newCourseName, self.user2.id, newTime)
+        self.app.editCourse(self.course1.id, newCourseName, newTime)
         editedCourse = CourseTable.objects.get(id=self.course1.id)
         self.assertEqual(editedCourse.courseName, newCourseName)
         self.assertEqual(editedCourse.time, newTime)

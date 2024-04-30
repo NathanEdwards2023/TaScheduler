@@ -46,7 +46,11 @@ def courseManagement(request):
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
 
-
+@login_required(login_url='login')
+def editCourse(request):
+    if request.method == 'POST':
+        pass
+    pass
 def createAccount(request):
     if request.method == 'POST':
         username = request.POST.get('username')

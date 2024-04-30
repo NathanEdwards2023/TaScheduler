@@ -29,8 +29,6 @@ class AdminAssignmentPage:
     def editCourse(self, course_id, courseName, time):
         try:
             course = CourseTable.objects.get(id=course_id)
-            if course.courseName == courseName & course.time == time:
-                raise ValueError("No changes were made")
             if courseName:
                 course.courseName = courseName
             if time:
