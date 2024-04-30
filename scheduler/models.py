@@ -20,11 +20,6 @@ class CourseTable(models.Model):
     time = models.CharField(max_length=30, blank=True, null=True)
 
 
-class CourseTA(models.Model):
-    course = models.ForeignKey(CourseTable, on_delete=models.CASCADE)
-    ta = models.ForeignKey(UserTable, on_delete=models.CASCADE)
-
-
 class UserCourseJoinTable(models.Model):
     # Relationship Fields
     courseId = models.ForeignKey(
@@ -35,6 +30,7 @@ class UserCourseJoinTable(models.Model):
         UserTable,
         on_delete=models.CASCADE,
     )
+    role = models.CharField(max_length=30, default='TA')
 
 
 class SectionTable(models.Model):

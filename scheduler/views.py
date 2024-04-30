@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, CourseTA
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
 
 @login_required(login_url='login')
@@ -57,21 +57,35 @@ def courseManagement(request):
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'deleteMessages': msg})
-        elif 'assignTAToCourseBtn' in request.POST:  # This is the new part to handle TA assignment to courses
-            course_id = request.POST.get('taCourseSelect')
-            ta_id = request.POST.get('taSelect')
-            try:
-                course = CourseTable.objects.get(pk=course_id)
-                ta = UserTable.objects.get(pk=ta_id)
-                CourseTA.objects.create(course=course, ta=ta)
+        elif request.method == 'POST':
+            if 'assignTAToCourseBtn' in request.POST:
+                course_id = request.POST.get(
+                    'courseId')  # Ensure this matches your HTML form's input name for the course ID
+                ta_id = request.POST.get('taId')  # Ensure this matches your HTML form's input name for the TA ID
 
-                messages.success(request, "TA successfully assigned to course.")
-            except CourseTable.DoesNotExist:
-                messages.error(request, "Selected course not found.")
-            except UserTable.DoesNotExist:
-                messages.error(request, "Selected TA not found.")
-        return redirect('courseManagement')
-    return render(request, 'courseManagement.html')
+                try:
+                    course = CourseTable.objects.get(pk=course_id)
+                    ta = UserTable.objects.get(pk=ta_id)
+
+                    UserCourseJoinTable.objects.update_or_create(
+                        courseId=course,
+                        userId=ta,
+                        defaults={'role': 'TA'}
+                    )
+                    messages.success(request, "TA successfully assigned to course.")
+                except CourseTable.DoesNotExist:
+                    messages.error(request, "Selected course not found.")
+                except UserTable.DoesNotExist:
+                    messages.error(request, "Selected TA not found.")
+
+            return redirect('courseManagement')
+
+            return render(request, 'courseManagement.html', {
+                'courses': courses,
+                'TAs': TAs,
+                'instructors': instructors,
+                'labs': labs
+            })
 
 
 def createAccount(request):
