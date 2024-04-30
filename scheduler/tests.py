@@ -8,7 +8,7 @@ import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 
 from scheduler.views import AdminAccManagement
@@ -519,6 +519,7 @@ class TestCreateLabSection(unittest.TestCase):
         self.assertFalse(result)
 
 
+
 class TestGetRole(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
@@ -606,6 +607,121 @@ class TestCreateSection(unittest.TestCase):
     def test_createSection_emptySectionName(self):
         with self.assertRaises(ValueError):
             self.app.createSection("", self.joinTable.id)
+
+class AssignTAToCourseTestCase(TestCase):
+    def setUp(self):
+        # Creating user and admin instances
+        self.admin_user = User.objects.create_user(username='admin', password='admin123', is_staff=True)
+        self.ta_user = UserTable.objects.create(firstName="John", lastName="Doe", email="johndoe@example.com", userType="TA")
+        self.course = CourseTable.objects.create(courseName="Introduction to Python")
+
+        # Log in the admin user
+        self.client.login(username='admin', password='admin123')
+
+    def test_successful_ta_assignment(self):
+        # Posting data to simulate form submission
+        response = self.client.post(reverse('courseManagement'), {
+            'assignTAToCourseBtn': True,
+            'courseId': self.course.id,
+            'userId': self.ta_user.id  # Adjusted to use 'userId'
+        }, follow=True)
+
+        # Check if the response indicates a successful assignment
+        self.assertRedirects(response, reverse('courseManagement'))  # Assuming it redirects back to the course management page
+        self.assertTrue(UserCourseJoinTable.objects.filter(courseId=self.course, userId=self.ta_user).exists())
+        messages = list(response.context['messages'])
+        self.assertIn("TA successfully assigned to course.", str(messages[0]))
+
+    def test_invalid_user_id(self):
+        # Testing with an invalid user ID
+        response = self.client.post(reverse('courseManagement'), {
+            'assignTAToCourseBtn': True,
+            'courseId': self.course.id,
+            'userId': 9999  # Non-existent user ID
+        }, follow=True)
+
+        # Check that the assignment was not made
+        self.assertFalse(UserCourseJoinTable.objects.filter(courseId=self.course, userId=9999).exists())
+        messages = list(response.context['messages'])
+        self.assertIn("Selected TA not found.", str(messages[0]))
+
+    def test_non_admin_access(self):
+        # Non-admin user (e.g., an instructor) attempts to assign a TA
+        non_admin_user = User.objects.create_user(username='instructor', password='password123')
+        self.client.login(username='instructor', password='password123')
+        response = self.client.post(reverse('courseManagement'), {
+            'assignTAToCourseBtn': True,
+            'courseId': self.course.id,
+            'userId': self.ta_user.id
+        }, follow=True)
+
+        # Expect a redirect to a permission denied page or home
+        self.assertRedirects(response, reverse('home'))  # Redirect to home for non-admin
+
+
+class AssignTAToLabTestCase(TestCase):
+    def setUp(self):
+        # Create users
+        self.admin_user = User.objects.create_user(username='admin', password='admin123', is_staff=True)
+        self.ta_user = UserTable.objects.create(firstName="John", lastName="Doe", email="johndoe@example.com",
+                                                userType="TA")
+
+        # Create course and section
+        self.course = CourseTable.objects.create(courseName="Introduction to Python")
+        self.section = SectionTable.objects.create(name="Section 1")
+        self.lab = LabTable.objects.create(sectionNumber="Lab 1", sectionId=self.section)
+
+        self.client = Client()
+
+    def test_successful_ta_assignment_to_lab(self):
+        self.client.login(username='admin', password='admin123')
+        response = self.client.post(reverse('assignTAToLab'), {
+            'labId': self.lab.id,
+            'userId': self.ta_user.id
+        })
+        self.assertContains(response, "TA successfully assigned to lab.")
+        self.assertEqual(LabTable.objects.filter(taId=self.ta_user.id).count(), 1)
+
+    def test_invalid_ta_id(self):
+        self.client.login(username='admin', password='admin123')
+        response = self.client.post(reverse('assignTAToLab'), {
+            'labId': self.lab.id,
+            'userId': 9999  # Non-existing TA ID
+        })
+        self.assertContains(response, "Selected TA not found.")
+
+    def test_invalid_lab_id(self):
+        self.client.login(username='admin', password='admin123')
+        response = self.client.post(reverse('assignTAToLab'), {
+            'labId': 9999,  # Non-existing Lab ID
+            'userId': self.ta_user.id
+        })
+        self.assertContains(response, "Selected lab not found.")
+
+    def test_non_admin_access(self):
+        non_admin_user = User.objects.create_user(username='nonadmin', password='password123')
+        self.client.login(username='nonadmin', password='password123')
+        response = self.client.post(reverse('assignTAToLab'), {
+            'labId': self.lab.id,
+            'userId': self.ta_user.id
+        })
+        self.assertRedirects(response, reverse('home'))  # Redirect to home or login
+
+    def test_unauthenticated_access(self):
+        response = self.client.post(reverse('assignTAToLab'), {
+            'labId': self.lab.id,
+            'userId': self.ta_user.id
+        })
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('assignTAToLab')}")
+
+    def tearDown(self):
+        self.admin_user.delete()
+        self.ta_user.delete()
+        self.course.delete()
+        self.section.delete()
+        self.lab.delete()
+
+
 
 
 if __name__ == '__main__':

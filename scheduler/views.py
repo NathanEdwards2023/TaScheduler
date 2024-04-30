@@ -4,15 +4,18 @@ from django.shortcuts import render, redirect
 from django.views import View
 from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
 
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+
 
 @login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
 
-@login_required(login_url='login')
+
 def courseManagement(request):
     courses = CourseTable.objects.all()
     TAs = UserTable.objects.filter(userType="ta")
@@ -65,6 +68,25 @@ def courseManagement(request):
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'messages': msg})
+          if 'assignTAToCourseBtn' in request.POST:
+              course_id = request.POST.get('courseId')
+              user_id = request.POST.get('userId')  # Note the changed parameter name
+              admin_page = adminAssignmentPage.AdminAssignmentPage()
+              success, message = admin_page.assignTAToCourse(course_id, user_id)
+  
+              if success:
+                  messages.success(request, message)
+              else:
+                  messages.error(request, message)
+  
+              return redirect('courseManagement')
+  
+              return render(request, 'courseManagement.html', {
+                  'courses': courses,
+                  'TAs': TAs,
+                  'instructors': instructors,
+                  'labs': labs
+              })
         return redirect('courseManagement')
 
 
@@ -76,9 +98,11 @@ def createAccount(request):
         adminPage = adminAssignmentPage.AdminAssignmentPage()
         accountCreated = adminPage.createAccount(username=username, email=email, password=password)
         if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account created successfully"})
         else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
+            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
+                                                          'messages': "Account failed to be created"})
 
     return render(request, 'createAccount.html')
 
