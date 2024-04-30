@@ -68,25 +68,19 @@ def courseManagement(request):
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'messages': msg})
-          if 'assignTAToCourseBtn' in request.POST:
-              course_id = request.POST.get('courseId')
-              user_id = request.POST.get('userId')  # Note the changed parameter name
-              admin_page = adminAssignmentPage.AdminAssignmentPage()
-              success, message = admin_page.assignTAToCourse(course_id, user_id)
-  
-              if success:
-                  messages.success(request, message)
-              else:
-                  messages.error(request, message)
-  
-              return redirect('courseManagement')
-  
-              return render(request, 'courseManagement.html', {
-                  'courses': courses,
-                  'TAs': TAs,
-                  'instructors': instructors,
-                  'labs': labs
-              })
+            if 'assignTAToCourseBtn' in request.POST:
+                course_id = request.POST.get('courseId')
+                user_id = request.POST.get('userId')  # Note the changed parameter name
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                success, message = admin_page.assignTAToCourse(course_id, user_id)
+
+                if success:
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
+
+                return redirect('courseManagement')
+
         return redirect('courseManagement')
 
 
