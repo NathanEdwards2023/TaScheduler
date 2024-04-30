@@ -25,8 +25,22 @@ class AdminAssignmentPage:
             newCourse.save()
             return True
 
-    def editCourse(self, course_id, courseName, instructorID, time):
-        pass
+    def editCourse(self, course_id, courseName, time):
+        try:
+            course = CourseTable.objects.get(id=course_id)
+
+            if courseName:
+                course.courseName = courseName
+
+            if time:
+                course.time = time
+
+            course.save()
+            return True
+
+        except CourseTable.DoesNotExist:
+            raise ValueError("Course does not exist")
+
     @staticmethod
     def createAccount(username, email, password):
         pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -40,8 +54,11 @@ class AdminAssignmentPage:
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
 
-        if User.objects.filter(email=email).exists():
-            raise ValueError("User with this email already exists")
+        try:
+            existing_email = User.objects.get(email=email)
+            raise ValueError("User already exists")
+        except User.DoesNotExist:
+            pass
 
         newAccount = User.objects.create_user(username=username, email=email, password=password)
         newUser = UserTable(email=email)
