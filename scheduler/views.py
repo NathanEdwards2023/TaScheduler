@@ -48,11 +48,11 @@ def courseManagement(request):
                     admin_page.createCourse(courseName, instructor)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
 
             if 'createSectionBtn' in request.POST:
                 sectionName = request.POST.get('courseSection')
@@ -78,8 +78,20 @@ def courseManagement(request):
                     messages.success(request, message)
                 else:
                     messages.error(request, message)
+            if 'deleteBtn' in request.POST:
+                courseId = request.POST.get('sectionSelect')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.deleteCourse(courseId)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'deleteMessages': "Course successfully deleted"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'deleteMessages': msg})
 
-                return redirect('courseManagement')
+            return redirect('courseManagement')
 
         return redirect('courseManagement')
 
