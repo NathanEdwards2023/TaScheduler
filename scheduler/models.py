@@ -30,7 +30,7 @@ class UserCourseJoinTable(models.Model):
         UserTable,
         on_delete=models.CASCADE,
     )
-    role = models.CharField(max_length=30, default='TA')
+
 
 
 class SectionTable(models.Model):
