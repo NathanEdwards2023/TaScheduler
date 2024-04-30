@@ -1,9 +1,8 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
+from scheduler.models import UserTable, CourseTable, LabTable
 import re
-
 
 class AdminAssignmentPage:
     def __init__(self):
@@ -26,46 +25,8 @@ class AdminAssignmentPage:
             newCourse.save()
             return True
 
-    def editCourse(self, course_id, courseName, time):
-        try:
-            course = CourseTable.objects.get(id=course_id)
-            if courseName:
-                course.courseName = courseName
-            if time:
-                course.time = time
-
-            course.save()
-            return True
-
-        except CourseTable.DoesNotExist:
-            raise ValueError("Course does not exist")
-
-    @staticmethod
-    def deleteCourse(courseId):
-        if CourseTable.objects.get(id=courseId).DoesNotExist:
-            return ValueError("Course does not exist")
-        try:
-            course = CourseTable.objects.get(id=courseId)
-            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
-            for ucj in ucjt:
-                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
-                for sec in sect:
-                    labt = LabTable.objects.filter(sectionId=sec)
-                    for lab in labt:
-                        lab.delete()
-                    sec.delete()
-                ucj.delete()
-            course.delete()
-            return True
-        except CourseTable.objects.get(id=courseId).DoesNotExist:
-            # Handle the case where the course does not exist
-            # You can render an error message or redirect to an error page
-            return ValueError("Course does not exist")
-
-    @staticmethod
-    def createLabSection(labId, courseId):
+    def editCourse(self, course_id, courseName, instructorID, time):
         pass
-
     @staticmethod
     def createAccount(username, email, password):
         pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -79,18 +40,15 @@ class AdminAssignmentPage:
         if len(password) < 8:
             raise ValueError("Password must be at least 8 characters long")
 
-        try:
-            existingUser = User.objects.get(email=email)
-            raise Exception("User already exists")
-        except User.DoesNotExist:
-            pass
+        if User.objects.filter(email=email).exists():
+            raise ValueError("User with this email already exists")
 
-        newUser = User(username=username, password=password, email=email)
-        newAccount = UserTable(email=email)
-        newUser.save()
+        newAccount = User.objects.create_user(username=username, email=email, password=password)
+        newUser = UserTable(email=email)
         newAccount.save()
-
+        newUser.save()
         return True
+
 
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account
