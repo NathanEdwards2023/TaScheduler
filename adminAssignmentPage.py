@@ -12,21 +12,9 @@ class AdminAssignmentPage:
         # Display admin assignment details
         pass
 
-    def createCourse(self, courseName, instructorId):
-        # Create a new course
-        if CourseTable.objects.filter(courseName=courseName).exists():
-            raise ValueError("Course already exists")
-        elif courseName == "":
-            raise ValueError("Invalid course name")
-        elif not UserTable.objects.filter(id=instructorId).exists():
-            raise ValueError("Invalid instructor")
-        else:
-            newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
-            newCourse.save()
-            return True
-
     def editCourse(self, course_id, courseName, instructorID, time):
         pass
+
     @staticmethod
     def createCourse(courseName, instructorId):
         # Create a new course
