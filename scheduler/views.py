@@ -43,14 +43,20 @@ def courseManagement(request):
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
             except ValueError as msg:
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+        if request.method == 'POST' and 'editCourseBtn' in request.POST:
+            courseName = request.POST.get('courseName')
+            courseTime = request.POST.get('courseTime')
+
+            # Create a new CourseTable object
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            try:
+                admin_page.createEditcourse(courseName, courseTime)
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+            except ValueError as msg:
+                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
 
-@login_required(login_url='login')
-def editCourse(request):
-    if request.method == 'POST':
-        pass
-    pass
 def createAccount(request):
     if request.method == 'POST':
         username = request.POST.get('username')
