@@ -177,57 +177,42 @@
             <section>
                 <h2 class="menuTitle">Assign TA to Lab Section</h2>
                 <div class="menuBox">
-                    <div class="assignContainer">
-                        <label for="labCourse">Course:</label>
-                        <select id="labCourse" name="labCourse">
-                            {% if courses %}
-                                {% for course in courses %}
-                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No courses available</option>
-                            {% endif %}
-                        </select>
-                        <label for="labTA">TA:</label>
-                        <select id="labTA" name="labTA">
-                            {% if TAs %}
-                                {% for TA in TAs %}
-                                    <option value="{{ TA.userID }}">{{ TA.firstName}} {{TA.lastName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No TAs available</option>
-                            {% endif %}
-                        </select>
-                        <label for="labSectionSelect">Lab Section:</label>
-                        <select id="labSectionSelect" name="labSection">
-                            {% if labs %}
-                                {% for lab in labs %}
-                                    <option value="{{ lab.sectionNumber }}">{{ lab.sectionNumber }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No labs available</option>
-                            {% endif %}
-                        </select>
-                        <button class="submitButton">Assign</button>
-                    </div>
-                    <div class="scrollingList">
-                        <!--TA assignments-->
-                        <ul>
-                            {% for lab in labs %}
-                                {% with labTA=lab.taId %}
-                                    <li>{{ labTA.firstName }} {{ labTA.lastName }}
-                                        <ul>
-                                            <li>Course: {{ lab.courseId.courseName }} Lab Section: {{ lab.sectionNumber }}</li>
-                                        </ul>
-                                    </li>
-                                {% endwith %}
-                            {% empty %}
-                                <li>No Assignments</li>
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
+                        <label for="courseId">Course:</label>
+                        <select id="courseId" name="courseId">
+                            {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.courseName }}</option>
                             {% endfor %}
-                        </ul>
+                        </select>
+                        <label for="userId">TA:</label>
+                        <select id="userId" name="userId">
+                            {% for ta in TAs %}
+                                <option value="{{ ta.id }}">{{ ta.firstName }} {{ ta.lastName }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="labId">Lab Section:</label>
+                        <select id="labId" name="labId">
+                            {% for lab in labs %}
+                                <option value="{{ lab.id }}">{{ lab.sectionNumber }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="submit" name="assignTAToLabBtn" value="Assign TA" class="submit-btn">
+                        {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                    {% if 'lab_success' in message.tags or 'lab_error' in message.tags %}
+                                        <div class="{{ message.tags }}">
+                                            {{ message }}
+                                    </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
+                {% endif %}
+                    </form>
                 </div>
             </section>
+
         <section>
             <h2 class="menuTitle">Edit a Course</h2>
             <div class="menuBox">

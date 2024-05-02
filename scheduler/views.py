@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 
+
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
@@ -63,7 +64,6 @@ def courseManagement(request):
             user_id = request.POST.get('userId')  # Note the changed parameter name
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             success, message = admin_page.assignTAToCourse(course_id, user_id)
-
             if success:
                 messages.success(request, message)
             else:
@@ -71,12 +71,21 @@ def courseManagement(request):
 
             return redirect('courseManagement')
 
-            return render(request, 'courseManagement.html', {
-                'courses': courses,
-                'TAs': TAs,
-                'instructors': instructors,
-                'labs': labs
-            })
+        elif 'assignTAToLabBtn' in request.POST:
+            lab_id = request.POST.get('labId')
+            user_id = request.POST.get('userId')
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
+            success, message = admin_page.assignTAToLab(lab_id, user_id)
+            if success:
+                messages.success(request, message, extra_tags='lab_success')
+            else:
+                messages.error(request, message, extra_tags='lab_error')
+            return redirect('courseManagement')
+
+
+
+
+
 
 
 def createAccount(request):
