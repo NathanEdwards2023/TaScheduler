@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
+from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable
 import re
 
 class AdminAssignmentPage:
@@ -12,21 +12,9 @@ class AdminAssignmentPage:
         # Display admin assignment details
         pass
 
-    def createCourse(self, courseName, instructorId):
-        # Create a new course
-        if CourseTable.objects.filter(courseName=courseName).exists():
-            raise ValueError("Course already exists")
-        elif courseName == "":
-            raise ValueError("Invalid course name")
-        elif not UserTable.objects.filter(id=instructorId).exists():
-            raise ValueError("Invalid instructor")
-        else:
-            newCourse = CourseTable(courseName=courseName, instructorId=UserTable.objects.get(id=instructorId))
-            newCourse.save()
-            return True
-
     def editCourse(self, course_id, courseName, instructorID, time):
         pass
+
     @staticmethod
     def createCourse(courseName, instructorId):
         # Create a new course
@@ -178,6 +166,24 @@ class AdminAssignmentPage:
             return False, f"An unexpected error occurred: {str(e)}"
 
 
-    def getRole(self, email):
-        # get the accs role
-        pass
+    @staticmethod
+    def getRole(email):
+        try:
+            return UserTable.objects.get(email=email).userType
+        except ObjectDoesNotExist:
+            return None
+
+    @staticmethod
+    def createSection(sectionName, joinTableId):
+        # Create a new course section
+        try:
+            joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
+            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId, name=sectionName).first()
+            if existingCourseSection:
+                raise ValueError("Section already exists")
+            elif sectionName == "":
+                raise ValueError("Invalid course name")
+            SectionTable.objects.create(name=sectionName, userCourseJoinId=joinTable)
+            return "Section created successfully"
+        except ObjectDoesNotExist:
+            return "Failed to create section"
