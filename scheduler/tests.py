@@ -502,6 +502,7 @@ class TestCreateLabSection(unittest.TestCase):
 
         # Verify that lab section is created
         self.assertTrue(SectionTable.objects.filter(name="Lab1", userCourseJoinId__courseId_id=course.id).exists())
+        course.delete()
 
     def test_create_lab_section_invalid_course(self):
         result = self.admin_page.createLabSection(course_id=999, section_name="Lab1")

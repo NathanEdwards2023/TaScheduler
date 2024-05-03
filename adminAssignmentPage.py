@@ -39,15 +39,15 @@ class AdminAssignmentPage:
             return ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
-            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
-            for ucj in ucjt:
-                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
-                for sec in sect:
-                    labt = LabTable.objects.filter(sectionId=sec)
-                    for lab in labt:
-                        lab.delete()
-                    sec.delete()
-                ucj.delete()
+            #ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
+            #for ucj in ucjt:
+                #sect = SectionTable.objects.filter(userCourseJoinId=ucj)
+                #for sec in sect:
+                    #labt = LabTable.objects.filter(sectionId=sec)
+                    #for lab in labt:
+                        #lab.delete()
+                    #sec.delete()
+                #ucj.delete()
             course.delete()
             return True
         except CourseTable.objects.get(id=courseId).DoesNotExist:

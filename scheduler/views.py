@@ -39,16 +39,17 @@ def courseManagement(request):
         if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
 
+            ''' i commented this out because it was breaking the page everytime a button was clicked '''
+            '''
             success, message = admin_page.assignTAToCourse(course_id, user_id)
             if success:
                 messages.success(request, message)
             else:
                 messages.error(request, message)
+            '''
 
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
-                courseTime = request.POST.get('courseTime')
-                courseDays = request.POST.get('courseDays')
                 instructor = request.POST.get('instructorSelect')
 
                 # Create a new CourseTable object
@@ -91,15 +92,16 @@ def courseManagement(request):
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
                 try:
                     admin_page.deleteCourse(courseId)
+                    courses = CourseTable.objects.all()
+                    labs = LabTable.objects.all()
+                    joinEntries = UserCourseJoinTable.objects.all()
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'deleteMessages': "Course successfully deleted"})
+                                   'joinEntries': joinEntries, 'deleteMessages': "Course successfully deleted"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'deleteMessages': msg})
-
-            return redirect('courseManagement')
+                                   'joinEntries': joinEntries, 'deleteMessages': msg})
 
             if'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
