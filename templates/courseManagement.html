@@ -170,7 +170,8 @@
 
                 <h2 class="menuTitle">Course and Lab Deletion</h2>
                 <div class="menuBoxMid">
-                    <form>
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
                         <label for="sectionSelect">Select Section:</label><br>
                         <select id="sectionSelect" name="sectionSelect">
                             {% if courses %}
