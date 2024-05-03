@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 
+
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
@@ -37,6 +38,13 @@ def courseManagement(request):
     else:
         if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
+
+            success, message = admin_page.assignTAToCourse(course_id, user_id)
+            if success:
+                messages.success(request, message)
+            else:
+                messages.error(request, message)
+
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
                 courseTime = request.POST.get('courseTime')
@@ -93,7 +101,19 @@ def courseManagement(request):
 
             return redirect('courseManagement')
 
+            if'assignTAToLabBtn' in request.POST:
+                lab_id = request.POST.get('labId')
+                user_id = request.POST.get('userId')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                success, message = admin_page.assignTAToLab(lab_id, user_id)
+                if success:
+                    messages.success(request, message, extra_tags='lab_success')
+                else:
+                    messages.error(request, message, extra_tags='lab_error')
+                return redirect('courseManagement')
+
         return redirect('courseManagement')
+
 
 
 def createAccount(request):
