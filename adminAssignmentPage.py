@@ -35,8 +35,8 @@ class AdminAssignmentPage:
 
     @staticmethod
     def deleteCourse(courseId):
-        if CourseTable.objects.get(id=courseId).DoesNotExist:
-            return ValueError("Course does not exist")
+        if courseId == "":
+            raise ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
             #ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
@@ -52,8 +52,7 @@ class AdminAssignmentPage:
             return True
         except CourseTable.objects.get(id=courseId).DoesNotExist:
             # Handle the case where the course does not exist
-            # You can render an error message or redirect to an error page
-            return ValueError("Course does not exist")
+            raise ValueError("Course does not exist")
 
     @staticmethod
     def createLabSection(labId, courseId):
