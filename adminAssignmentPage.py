@@ -118,7 +118,7 @@ class AdminAssignmentPage:
         try:
             # Fetch the course and TA from the database
             course = CourseTable.objects.get(pk=course_id)
-            ta = UserTable.objects.get(pk=user_id, userType='TA')
+            ta = UserTable.objects.get(pk=user_id, userType='ta')
 
             # Using update_or_create to prevent duplicate assignments and handle the operation atomically
             assignment, created = UserCourseJoinTable.objects.update_or_create(
@@ -143,7 +143,7 @@ class AdminAssignmentPage:
     def assignTAToLab(self, lab_id, user_id):
         try:
             lab = LabTable.objects.get(id=lab_id)
-            ta = UserTable.objects.get(id=user_id, userType='TA')
+            ta = UserTable.objects.get(id=user_id, userType='ta')
 
             existing_assignment = UserCourseJoinTable.objects.filter(
                 courseId=lab.sectionId.userCourseJoinId.courseId,

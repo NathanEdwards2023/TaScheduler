@@ -6,8 +6,6 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-
-
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
@@ -36,9 +34,11 @@ def courseManagement(request):
             return redirect('home')
 
     else:
+        course_id = request.POST.get('courseId')
+        user_id = request.POST.get('userId')
         if request.method == 'POST':
-            admin_page = adminAssignmentPage.AdminAssignmentPage()
 
+            admin_page = adminAssignmentPage.AdminAssignmentPage()
             success, message = admin_page.assignTAToCourse(course_id, user_id)
             if success:
                 messages.success(request, message)
@@ -77,8 +77,6 @@ def courseManagement(request):
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'messages': msg})
             if 'assignTAToCourseBtn' in request.POST:
-                course_id = request.POST.get('courseId')
-                user_id = request.POST.get('userId')  # Note the changed parameter name
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
                 success, message = admin_page.assignTAToCourse(course_id, user_id)
 
@@ -89,7 +87,7 @@ def courseManagement(request):
 
                 return redirect('courseManagement')
 
-            if'assignTAToLabBtn' in request.POST:
+            if 'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
                 user_id = request.POST.get('userId')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
@@ -101,7 +99,6 @@ def courseManagement(request):
                 return redirect('courseManagement')
 
         return redirect('courseManagement')
-
 
 
 def createAccount(request):
