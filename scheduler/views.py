@@ -39,19 +39,9 @@ def courseManagement(request):
         if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
 
-            ''' i commented this out because it was breaking the page everytime a button was clicked '''
-            '''
-            success, message = admin_page.assignTAToCourse(course_id, user_id)
-            if success:
-                messages.success(request, message)
-            else:
-                messages.error(request, message)
-            '''
-
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
                 instructor = request.POST.get('instructorSelect')
-
                 # Create a new CourseTable object
                 try:
                     admin_page.createCourse(courseName, instructor)
@@ -87,6 +77,7 @@ def courseManagement(request):
                     messages.success(request, message)
                 else:
                     messages.error(request, message)
+
             if 'deleteBtn' in request.POST:
                 courseId = request.POST.get('sectionSelect')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()

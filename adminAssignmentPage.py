@@ -39,6 +39,7 @@ class AdminAssignmentPage:
             raise ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
+            '''this block can likely be deleted later'''
             #ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
             #for ucj in ucjt:
                 #sect = SectionTable.objects.filter(userCourseJoinId=ucj)
