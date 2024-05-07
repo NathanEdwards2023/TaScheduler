@@ -130,13 +130,38 @@
             {% if messages %}
         <div class="messages">
             {% for message in messages %}
+                {% if 'course_assign' in message.tags %}
                 <div {% if message.tags %} class="{{ message.tags }}" {% endif %}>
                     {{ message }}
                 </div>
+                {% endif %}
             {% endfor %}
         </div>
     {% endif %}
         </form>
+    {% if ta_assignments %}
+            <h3>Current TA Assignments</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>TA Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in ta_assignments %}
+                    <tr>
+                        <td>{{ assignment.courseId.courseName }}</td>
+                        <td>{{ assignment.userId.firstName }} {{ assignment.userId.lastName }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2">No TA assignments found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
     </div>
 </section>
         <!--assign to course-->
@@ -216,7 +241,7 @@
                         {% if messages %}
                             <div class="messages">
                                 {% for message in messages %}
-                                    {% if 'lab_success' in message.tags or 'lab_error' in message.tags %}
+                                    {% if 'lab_assign' in message.tags %}
                                         <div class="{{ message.tags }}">
                                             {{ message }}
                                     </div>
@@ -227,7 +252,7 @@
                     </form>
                 </div>
             </section>
-
+        
         <section>
             <h2 class="menuTitle">Edit a Course</h2>
             <div class="menuBox">

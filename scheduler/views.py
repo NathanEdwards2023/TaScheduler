@@ -21,6 +21,8 @@ def courseManagement(request):
     instructors = UserTable.objects.filter(userType="instructor")
     labs = LabTable.objects.all()
     joinEntries = UserCourseJoinTable.objects.all()
+    ta_assignments = UserCourseJoinTable.objects.filter(userId__userType='ta').select_related('courseId', 'userId')
+
 
     if request.method == 'GET':
         user = request.user
@@ -28,7 +30,7 @@ def courseManagement(request):
         if user.is_authenticated and accRole == 'admin':
             return render(request, 'courseManagement.html',
                           {'courses': courses, 'TAs': TAs, 'instructors': instructors,
-                           'joinEntries': joinEntries, 'labs': labs})
+                           'joinEntries': joinEntries, 'labs': labs, 'ta_assignments': ta_assignments})
         else:
             # Redirect non-admin users to another page (e.g., home page)
             return redirect('home')
@@ -81,11 +83,9 @@ def courseManagement(request):
                 success, message = admin_page.assignTAToCourse(course_id, user_id)
 
                 if success:
-                    messages.success(request, message)
+                    messages.success(request, message, extra_tags="course_assign")
                 else:
-                    messages.error(request, message)
-
-                return redirect('courseManagement')
+                    messages.error(request, message, extra_tags="course_assign")
 
             if 'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
@@ -93,9 +93,9 @@ def courseManagement(request):
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
-                    messages.success(request, message, extra_tags='lab_success')
+                    messages.success(request, message, extra_tags='lab_assign')
                 else:
-                    messages.error(request, message, extra_tags='lab_error')
+                    messages.error(request, message, extra_tags='lab_assign')
                 return redirect('courseManagement')
 
         return redirect('courseManagement')
