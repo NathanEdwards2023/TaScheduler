@@ -44,33 +44,20 @@ def courseManagement(request):
             except ValueError as msg:
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
         if request.method == 'POST' and 'editCourseBtn' in request.POST:
+            courseID = request.POST.get("courseSelect")
             courseName = request.POST.get('courseName')
             courseTime = request.POST.get('courseTime')
 
             # Create a new CourseTable object
             admin_page = adminAssignmentPage.AdminAssignmentPage()
+            courseEdited = admin_page.editCourse(course_id=courseID, courseName=courseName, time=courseTime)
             try:
-                admin_page.createEditcourse(courseName, courseTime)
+                admin_page.editCourse(courseID, courseName, courseTime)
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
             except ValueError as msg:
                 return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
-
-def createAccount(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        adminPage = adminAssignmentPage.AdminAssignmentPage()
-        accountCreated = adminPage.createAccount(username=username, email=email, password=password)
-        if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account created successfully"})
-        else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password, 'messages': "Account failed to be created"})
-
-    return render(request, 'createAccount.html')
-
 
 class AdminAccManagement(View):
     @staticmethod
@@ -109,3 +96,4 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+        return render(request, 'adminAccManagement.html', {'users': User.objects.all()})

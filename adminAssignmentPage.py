@@ -45,7 +45,7 @@ class AdminAssignmentPage:
     def createAccount(username, email, password):
         pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
-        if username == "" or email == "" or password == "":
+        if username == '' or email == '' or password == '':
             raise ValueError("All fields need to be filled out")
 
         if not re.match(pattern, email):
