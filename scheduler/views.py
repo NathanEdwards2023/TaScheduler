@@ -48,11 +48,11 @@ def courseManagement(request):
                     admin_page.createCourse(courseName, instructor)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
 
             if 'createSectionBtn' in request.POST:
                 sectionName = request.POST.get('courseSection')
@@ -63,11 +63,11 @@ def courseManagement(request):
                     msg = admin_page.createSection(sectionName, joinTable)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
                 user_id = request.POST.get('userId')  # Note the changed parameter name

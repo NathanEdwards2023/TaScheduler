@@ -68,7 +68,8 @@
                                 <option value="">No course-user entries available</option>
                             {% endif %}
                         </select><br><br>
-                        <input type="submit" name = "createSectionBtn" value="Create Course Section">                    </form>
+                        <input type="submit" name = "createSectionBtn" value="Create Course Section">                   
+                    </form>
                     <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
                         <label for="courseName">Lab Section:</label><br>

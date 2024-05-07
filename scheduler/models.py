@@ -32,7 +32,6 @@ class UserCourseJoinTable(models.Model):
     )
 
 
-
 class SectionTable(models.Model):
     # Fields
     name = models.CharField(max_length=30)
