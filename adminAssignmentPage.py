@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable
 import re
 
+
 class AdminAssignmentPage:
     def __init__(self):
         pass
@@ -51,25 +52,25 @@ class AdminAssignmentPage:
 
     @staticmethod
     def deleteCourse(courseId):
-        if CourseTable.objects.get(id=courseId).DoesNotExist:
-            return ValueError("Course does not exist")
+        if courseId == "":
+            raise ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
-            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
-            for ucj in ucjt:
-                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
-                for sec in sect:
-                    labt = LabTable.objects.filter(sectionId=sec)
-                    for lab in labt:
-                        lab.delete()
-                    sec.delete()
-                ucj.delete()
+            '''this block can likely be deleted later'''
+            #ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
+            #for ucj in ucjt:
+                #sect = SectionTable.objects.filter(userCourseJoinId=ucj)
+                #for sec in sect:
+                    #labt = LabTable.objects.filter(sectionId=sec)
+                    #for lab in labt:
+                        #lab.delete()
+                    #sec.delete()
+                #ucj.delete()
             course.delete()
             return True
         except CourseTable.objects.get(id=courseId).DoesNotExist:
             # Handle the case where the course does not exist
-            # You can render an error message or redirect to an error page
-            return ValueError("Course does not exist")
+            raise ValueError("Course does not exist")
 
     @staticmethod
     def createLabSection(labId, courseId):
@@ -100,7 +101,6 @@ class AdminAssignmentPage:
         newUser.save()
         return True
 
-
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account
         pass
@@ -115,13 +115,7 @@ class AdminAssignmentPage:
             if (account.email != user.email) | (usernameID != emailID):
                 return "username/email match error"
 
-            # Delete children
-            if user.userType == "ta":
-                LabTable.objects.filter(taId=user.id).delete()
-            elif user.userType == "instructor":
-                CourseTable.objects.filter(instructorId=user.id).delete()
-
-            # Finally delete user...
+            # delete user...
             user.delete()
             # Delete the account
             account.delete()
@@ -160,8 +154,30 @@ class AdminAssignmentPage:
             return False, f"An error occurred: {str(e)}"
 
     def assignTAToLab(self, lab_id, user_id):
-        # Assign a TA to a lab
-        pass
+        try:
+            lab = LabTable.objects.get(id=lab_id)
+            ta = UserTable.objects.get(id=user_id, userType='TA')
+
+            existing_assignment = UserCourseJoinTable.objects.filter(
+                courseId=lab.sectionId.userCourseJoinId.courseId,
+                userId=ta
+            )
+            if existing_assignment.exists():
+                return False, "TA is already assigned to a lab in this course."
+
+            UserCourseJoinTable.objects.update_or_create(
+                courseId=lab.sectionId.userCourseJoinId.courseId,
+                userId=ta,
+                defaults={'role': 'TA'}
+            )
+            return True, "TA successfully assigned to lab."
+        except LabTable.DoesNotExist:
+            return False, "Lab not found."
+        except UserTable.DoesNotExist:
+            return False, "TA not found or not eligible."
+        except Exception as e:
+            return False, f"An unexpected error occurred: {str(e)}"
+
 
     @staticmethod
     def getRole(email):
@@ -174,13 +190,17 @@ class AdminAssignmentPage:
     def createSection(sectionName, joinTableId):
         # Create a new course section
         try:
-            joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
-            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId, name=sectionName).first()
+          #  if not UserCourseJoinTable.objects.get(id=joinTableId).exists():
+           #     raise ValueError("Join table entry does not exist")
+
+            joinTable = UserCourseJoinTable.objects.filter(id=joinTableId).first()
+            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId,
+                                                                name=sectionName).exists()
             if existingCourseSection:
                 raise ValueError("Section already exists")
             elif sectionName == "":
                 raise ValueError("Invalid course name")
             SectionTable.objects.create(name=sectionName, userCourseJoinId=joinTable)
             return "Section created successfully"
-        except ObjectDoesNotExist:
-            return "Failed to create section"
+        except ObjectDoesNotExist as msg:
+            raise ValueError(msg)

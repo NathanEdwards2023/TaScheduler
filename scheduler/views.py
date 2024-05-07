@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 
+
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 
@@ -37,22 +38,20 @@ def courseManagement(request):
     else:
         if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
+
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
-                courseTime = request.POST.get('courseTime')
-                courseDays = request.POST.get('courseDays')
                 instructor = request.POST.get('instructorSelect')
-
                 # Create a new CourseTable object
                 try:
                     admin_page.createCourse(courseName, instructor)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
 
             if 'createSectionBtn' in request.POST:
                 sectionName = request.POST.get('courseSection')
@@ -63,11 +62,11 @@ def courseManagement(request):
                     msg = admin_page.createSection(sectionName, joinTable)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'messages': msg})
+                                   'joinEntries': joinEntries, 'createMessages': msg})
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
                 user_id = request.POST.get('userId')  # Note the changed parameter name
@@ -79,6 +78,31 @@ def courseManagement(request):
                 else:
                     messages.error(request, message)
 
+            if 'deleteBtn' in request.POST:
+                courseId = request.POST.get('sectionSelect')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.deleteCourse(courseId)
+                    courses = CourseTable.objects.all()
+                    labs = LabTable.objects.all()
+                    joinEntries = UserCourseJoinTable.objects.all()
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'deleteMessages': "Course successfully deleted"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'deleteMessages': msg})
+
+            if'assignTAToLabBtn' in request.POST:
+                lab_id = request.POST.get('labId')
+                user_id = request.POST.get('userId')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                success, message = admin_page.assignTAToLab(lab_id, user_id)
+                if success:
+                    messages.success(request, message, extra_tags='lab_success')
+                else:
+                    messages.error(request, message, extra_tags='lab_error')
                 return redirect('courseManagement')
             if 'editCourseBtn' in request.POST:
               courseName = request.POST.get('courseName')
@@ -92,6 +116,7 @@ def courseManagement(request):
                   return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
 
         return redirect('courseManagement')
+
 
 def createAccount(request):
     if request.method == 'POST':
