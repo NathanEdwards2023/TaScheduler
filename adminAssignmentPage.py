@@ -4,15 +4,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable
 import re
 
+
 class AdminAssignmentPage:
     def __init__(self):
         pass
 
     def displayAdminAssignment(self):
         # Display admin assignment details
-        pass
-
-    def editCourse(self, course_id, courseName, instructorID, time):
         pass
 
     @staticmethod
@@ -33,9 +31,13 @@ class AdminAssignmentPage:
                 newJoin.save()
             return True
 
-    def editCourse(self, course_id, courseName, time):
+    @staticmethod
+    def editCourse(course_id, courseName, instructorID, time):
         try:
             course = CourseTable.objects.get(id=course_id)
+
+            if instructorID:
+                course.instructorID = instructorID
 
             if courseName:
                 course.courseName = courseName
@@ -99,7 +101,6 @@ class AdminAssignmentPage:
         newAccount.save()
         newUser.save()
         return True
-
 
     def editAccount(self, user_id, email, phone, address, role):
         # Edit an existing user account
@@ -175,7 +176,8 @@ class AdminAssignmentPage:
         # Create a new course section
         try:
             joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
-            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId, name=sectionName).first()
+            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId,
+                                                                name=sectionName).first()
             if existingCourseSection:
                 raise ValueError("Section already exists")
             elif sectionName == "":

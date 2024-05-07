@@ -8,9 +8,11 @@ from django.contrib.auth.decorators import login_required
 import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable
 
+
 @login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
+
 
 @login_required(login_url='login')
 def courseManagement(request):
@@ -40,24 +42,33 @@ def courseManagement(request):
             admin_page = adminAssignmentPage.AdminAssignmentPage()
             try:
                 admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': "Course successfully created"})
             except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': msg})
         if request.method == 'POST' and 'editCourseBtn' in request.POST:
-            courseID = request.POST.get("courseSelect")
-            courseName = request.POST.get('courseName')
-            courseTime = request.POST.get('courseTime')
+            courseID = request.POST.get("editCourseSelect")
+            courseName = request.POST.get('editName')
+            courseTime = request.POST.get('editTime')
+            instructor = request.POST.get('editInstructorSelect')
 
             # Create a new CourseTable object
             admin_page = adminAssignmentPage.AdminAssignmentPage()
-            courseEdited = admin_page.editCourse(course_id=courseID, courseName=courseName, time=courseTime)
             try:
-                admin_page.editCourse(courseID, courseName, courseTime)
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': "Course successfully created"})
+                admin_page.editCourse(courseID, courseName, instructor, courseTime)
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': "Course successfully created"})
             except ValueError as msg:
-                return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs, 'messages': msg})
+                return render(request, 'courseManagement.html',
+                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                               'messages': msg})
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
+
 
 class AdminAccManagement(View):
     @staticmethod
