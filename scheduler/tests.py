@@ -420,13 +420,9 @@ class TestDeleteCourse(unittest.TestCase):
         # Create a course
         self.course = CourseTable.objects.create(courseName="Test Course")
 
-        # Create lab sections associated with the course
-        self.lab1 = LabTable.objects.create(sectionNumber="Lab 1")
-        self.lab2 = LabTable.objects.create(sectionNumber="Lab 2")
-
         # Create users
-        self.user1 = UserTable.objects.create(email="user1@example.com")
-        self.user2 = UserTable.objects.create(email="user2@example.com")
+        self.user1 = UserTable.objects.create(email="user01@example.com")
+        self.user2 = UserTable.objects.create(email="user02@example.com")
 
         # Create user-course associations
         self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)
@@ -436,9 +432,9 @@ class TestDeleteCourse(unittest.TestCase):
         self.section1 = SectionTable.objects.create(name="Section 1", userCourseJoinId=self.user_course1)
         self.section2 = SectionTable.objects.create(name="Section 2", userCourseJoinId=self.user_course2)
 
-        # Associate lab sections with the sections
-        self.section1.sectionId.add(self.lab1)
-        self.section2.sectionId.add(self.lab2)
+        # Create lab sections associated with the course
+        self.lab1 = LabTable.objects.create(sectionNumber="Lab 001", sectionId=self.section1)
+        self.lab2 = LabTable.objects.create(sectionNumber="Lab 002", sectionId=self.section2)
 
     def tearDown(self):
         # Clean up after each test by deleting created objects
@@ -451,7 +447,7 @@ class TestDeleteCourse(unittest.TestCase):
         self.user2.delete()
 
     def test_delete_course_success(self):
-        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        result = self.admin_page.deleteCourse(id=self.course.id)
         self.assertTrue(result)
 
         # Verify that course and associated objects are deleted
@@ -461,15 +457,15 @@ class TestDeleteCourse(unittest.TestCase):
         self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
 
     def test_delete_course_not_found(self):
-        result = self.admin_page.deleteCourses(course_id=999)
+        result = self.admin_page.deleteCourse(id=999)
         self.assertFalse(result)
 
     def test_delete_course_with_no_labs(self):
-        # Remove labs from sections
-        self.section1.sectionId.clear()
-        self.section2.sectionId.clear()
+        # Remove labs
+        self.lab1.delete()
+        self.lab2.delete()
 
-        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        result = self.admin_page.deleteCourse(id=self.course.id)
         self.assertTrue(result)
 
         # Verify that course and associated objects are deleted
@@ -479,7 +475,7 @@ class TestDeleteCourse(unittest.TestCase):
         self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
 
     def test_delete_course_with_associated_objects_deleted(self):
-        result = self.admin_page.deleteCourses(course_id=self.course.id)
+        result = self.admin_page.deleteCourse(id=self.course.id)
         self.assertTrue(result)
 
         # Verify that users attached to the course are not deleted
@@ -502,6 +498,7 @@ class TestCreateLabSection(unittest.TestCase):
 
         # Verify that lab section is created
         self.assertTrue(SectionTable.objects.filter(name="Lab1", userCourseJoinId__courseId_id=course.id).exists())
+        course.delete()
 
     def test_create_lab_section_invalid_course(self):
         result = self.admin_page.createLabSection(course_id=999, section_name="Lab1")
