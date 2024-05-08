@@ -35,20 +35,34 @@ class UserCourseJoinTable(models.Model):
 class SectionTable(models.Model):
     # Fields
     name = models.CharField(max_length=30)
-
-    # Relationship Fields
-    userCourseJoinId = models.ForeignKey(
-        UserCourseJoinTable,
-        on_delete=models.CASCADE,
-    )
+    time = models.CharField(max_length=30, blank=True, null=True)
 
 
 class LabTable(models.Model):
     # Fields
     sectionNumber = models.CharField(max_length=30)
+    time = models.CharField(max_length=30, blank=True, null=True)
 
+
+class UserSectionJoinTable(models.Model):
     # Relationship Fields
     sectionId = models.ForeignKey(
         SectionTable,
+        on_delete=models.CASCADE,
+    )
+    userId = models.ForeignKey(
+        UserTable,
+        on_delete=models.CASCADE,
+    )
+
+
+class UserLabJoinTable(models.Model):
+    # Relationship Fields
+    labId = models.ForeignKey(
+        LabTable,
+        on_delete=models.CASCADE,
+    )
+    userId = models.ForeignKey(
+        UserTable,
         on_delete=models.CASCADE,
     )
