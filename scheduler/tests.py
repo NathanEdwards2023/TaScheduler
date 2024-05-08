@@ -486,31 +486,41 @@ class TestDeleteCourse(unittest.TestCase):
 class TestCreateLabSection(unittest.TestCase):
     def setUp(self):
         self.admin_page = AdminAssignmentPage()
+        self.course = CourseTable.objects.create(courseName="Test Course")
+
+    def tearDown(self):
+        # Clean up the course created during testing
+        self.course.delete()
 
     def test_create_lab_section_success(self):
-        course = CourseTable.objects.create(courseName="Test Course")
-        result = self.admin_page.createLabSection(course_id=course.id, section_name="Lab1")
+        result = self.admin_page.createLabSection(courseId=self.course.id, sectionNumber="Lab #001")
         self.assertTrue(result)
 
         # Verify that lab section is created
-        self.assertTrue(SectionTable.objects.filter(name="Lab1", userCourseJoinId__courseId_id=course.id).exists())
-        course.delete()
+        self.assertTrue(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
 
     def test_create_lab_section_invalid_course(self):
-        result = self.admin_page.createLabSection(course_id=999, section_name="Lab1")
+        result, msg = self.admin_page.createLabSection(courseId=999, sectionNumber="Lab #001")
         self.assertFalse(result)
+        self.assertEqual(msg, "Course does not exist")
 
     def test_create_lab_section_with_empty_name(self):
-        result = self.admin_page.createLabSection(course_id=1, section_name="")
-        self.assertFalse(result)
+        with self.assertRaises(ValueError):
+            self.admin_page.createLabSection(courseId=self.course.id, sectionNumber="")
 
     def test_create_lab_section_with_existing_name(self):
-        # Create a lab section with the same name to emulate the scenario where it already exists
-        SectionTable.objects.create(name="Lab1", userCourseJoinId__courseId_id=1)
+        # Create a lab section with the same name to emulate it already exists
+        user = UserTable.objects.create(email="emailer@email.com", firstName="firstName", lastName="lastName")
+        joinentry = UserCourseJoinTable.objects.create(courseId=self.course.id, userId=user)
+        SectionTable.objects.create(name="Lab #001", userCourseJoinId=joinentry)
 
-        result = self.admin_page.createLabSection(course_id=1, section_name="Lab1")
-        self.assertFalse(result)
-
+        #result, msg = self.admin_page.createLabSection(courseId=self.course, sectionNumber="Lab #001")
+        #self.assertFalse(result)
+        #self.assertEqual(msg, "Lab section already exists for this course")
+        with self.assertRaises(ValueError):
+            self.admin_page.createLabSection(courseId=self.course.id, sectionNumber="Lab #001")
+        joinentry.delete()
+        user.delete()
 
 class TestGetRole(unittest.TestCase):
     def setUp(self):
