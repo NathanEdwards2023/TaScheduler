@@ -23,7 +23,6 @@ def courseManagement(request):
     joinEntries = UserCourseJoinTable.objects.all()
     ta_assignments = UserCourseJoinTable.objects.filter(userId__userType='ta').select_related('courseId', 'userId')
 
-
     if request.method == 'GET':
         user = request.user
         accRole = UserTable.objects.get(email=user.email).userType
@@ -38,14 +37,8 @@ def courseManagement(request):
     else:
         course_id = request.POST.get('courseId')
         user_id = request.POST.get('userId')
+        admin_page = adminAssignmentPage.AdminAssignmentPage()
         if request.method == 'POST':
-
-            admin_page = adminAssignmentPage.AdminAssignmentPage()
-            success, message = admin_page.assignTAToCourse(course_id, user_id)
-            if success:
-                messages.success(request, message)
-            else:
-                messages.error(request, message)
 
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
