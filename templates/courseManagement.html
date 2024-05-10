@@ -133,15 +133,15 @@
                             </select>
                         </div>
                         <input type="submit" name="assignTAToCourseBtn" value="Assign TA" class="submit-btn">
-                        {% if messages %}
-                            <div class="messages">
-                                {% for message in messages %}
-                                <div {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                        <div class="messages">
+                            {% for message in messages %}
+                                {% if 'course_assign' in message.tags %}
+                                    <div class="{{ message.tags }}">
                                     {{ message }}
-                                </div>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                                     </div>
+                                 {% endif %}
+                            {% endfor %}
+                        </div>
                     </form>
                 </div>
                 <!--Assign Instructor to Course-->
@@ -250,20 +250,45 @@
                             {% endfor %}
                         </select>
                         <input type="submit" name="assignTAToLabBtn" value="Assign TA" class="submit-btn">
-                        {% if messages %}
-                            <div class="messages">
-                                {% for message in messages %}
-                                    {% if 'lab_success' in message.tags or 'lab_error' in message.tags %}
-                                        <div class="{{ message.tags }}">
-                                            {{ message }}
+                       <div class="messages">
+                            {% for message in messages %}
+                                {% if 'lab_assign' in message.tags %}
+                                    <div class="{{ message.tags }}">
+                                    {{ message }}
                                     </div>
                             {% endif %}
-                        {% endfor %}
+                    {% endfor %}
                     </div>
-                {% endif %}
                     </form>
                 </div>
             </section>
+        <!-- TA Skills Section -->
+<section>
+    <h2 class="menuTitle">TA Skills</h2>
+    <div class="menuBoxMid">
+        {% if TAs %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>TA Name</th>
+                        <th>Skills</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ta in TAs %}
+                        <tr>
+                            <td>{{ ta.firstName }} {{ ta.lastName }}</td>
+                            <td>{{ ta.skills }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No TAs available</p>
+        {% endif %}
+    </div>
+</section>
+
         </div>
     </main>
 </body>
