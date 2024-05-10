@@ -74,8 +74,24 @@ class AdminAssignmentPage:
             return ValueError("Course does not exist")
 
     @staticmethod
-    def createLabSection(labId, courseId):
-        pass
+    def createLabSection(courseId, sectionNumber):
+        if sectionNumber == "":
+            raise ValueError("Invalid section number")
+        try:
+            # Check if the course exists
+            course = CourseTable.objects.get(id=courseId)
+            # Check if the section already exists for the given course
+            if SectionTable.objects.get(userCourseJoinId=course, name=sectionNumber).exists():
+                raise ValueError("Lab section already exists for this course")
+            # Create the lab section
+            lab_section = SectionTable.objects.create(name=sectionName, userCourseJoinId=course)
+            # Create the lab
+            LabTable.objects.create(sectionNumber=sectionNumber, sectionId=lab_section)
+            return True, "Lab section created successfully"
+        except CourseTable.DoesNotExist:
+            return False, "Course does not exist"
+        except SectionTable.DoesNotExist:
+            return False, "Section does not exist"
 
     @staticmethod
     def createAccount(username, email, password):
