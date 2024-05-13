@@ -53,19 +53,8 @@ class AdminAssignmentPage:
 
     @staticmethod
     def deleteCourse(courseId):
-        if CourseTable.objects.get(id=courseId).DoesNotExist:
-            return ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
-            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
-            for ucj in ucjt:
-                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
-                for sec in sect:
-                    labt = LabTable.objects.filter(sectionId=sec)
-                    for lab in labt:
-                        lab.delete()
-                    sec.delete()
-                ucj.delete()
             course.delete()
             return True
         except CourseTable.objects.get(id=courseId).DoesNotExist:
@@ -87,11 +76,11 @@ class AdminAssignmentPage:
             lab_section = SectionTable.objects.create(name=sectionName, userCourseJoinId=course)
             # Create the lab
             LabTable.objects.create(sectionNumber=sectionNumber, sectionId=lab_section)
-            return True, "Lab section created successfully"
+            return True
         except CourseTable.DoesNotExist:
-            return False, "Course does not exist"
+            return ValueError("Course does not exist")
         except SectionTable.DoesNotExist:
-            return False, "Section does not exist"
+            return ValueError("Section does not exist")
 
     @staticmethod
     def createAccount(username, email, password):

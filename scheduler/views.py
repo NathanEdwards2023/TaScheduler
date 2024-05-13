@@ -6,7 +6,7 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
 
 
 @login_required(login_url='login')
@@ -31,46 +31,82 @@ def courseManagement(request):
             # Redirect non-admin users to another page (e.g., home page)
             return redirect('home')
     else:
-      if request.method == 'POST':
-        if 'editCourseBtn' in request.POST:
-            courseID = request.POST.get("editCourseSelect")
-            courseName = request.POST.get('editName')
-            courseTime = request.POST.get('editTime')
-            instructor = request.POST.get('editInstructorSelect')
+        if request.method == 'POST':
+            if 'createCourseBtn' in request.POST:
+                courseName = request.POST.get('courseName')
+                courseTime = request.POST.get('courseTime')
+                courseDays = request.POST.get('courseDays')
+                instructor = request.POST.get('instructorSelect')
+
+                # Create a new CourseTable object
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.createCourse(courseName, instructor)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'createMessages': "Course successfully created"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'createMessages': msg})
+
+            if 'editCourseBtn' in request.POST:
+                courseID = request.POST.get("editCourseSelect")
+                courseName = request.POST.get('editName')
+                courseTime = request.POST.get('editTime')
+                instructor = request.POST.get('editInstructorSelect')
 
             # Create a new CourseTable object
-            admin_page = adminAssignmentPage.AdminAssignmentPage()
-            try:
-                admin_page.editCourse(courseID, courseName, instructor, courseTime)
-                return render(request, 'courseManagement.html',
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.editCourse(courseID, courseName, instructor, courseTime)
+                    return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'messages': "Course successfully created"})
-            except ValueError as msg:
-                return render(request, 'courseManagement.html',
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'messages': msg})
 
-          if 'createLabBtn' in request.POST:
-              labSection = request.POST.get('labSection')
-              courseSelect = request.POST.get('courseSelect')
+            if 'deleteBtn' in request.POST:
+                courseId = request.POST.get('sectionSelect')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.deleteCourse(courseId)
+                    courses = CourseTable.objects.all()
+                    labs = LabTable.objects.all()
+                    joinEntries = UserCourseJoinTable.objects.all()
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'deleteMessages': "Course successfully deleted"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'deleteMessages': msg})
 
-                #try:
-                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
-                  #  if success:
-                   #     messages.success(request, message)
-                    #else:
-                     #   messages.error(request, message)
-                #except ValueError as msg:
-                 #   messages.error(request, msg)
+            if 'createLabBtn' in request.POST:
+                labSection = request.POST.get('labSection')
+                courseSelect = request.POST.get('courseSelect')
+
+                # try:
+                #   success, message = admin_page.createLabSection(courseSelect, labSection)
+                #  if success:
+                #     messages.success(request, message)
+                # else:
+                #   messages.error(request, message)
+                # except ValueError as msg:
+                #   messages.error(request, msg)
                 try:
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Lab successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
+
+
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
 
