@@ -35,7 +35,7 @@
         <div class="menuContainer">
         <!--Course, Section, and Lab Creation Section(1st column)-->
             <section>
-                <h2 class="menuTitle">Course, Course Section and Lab Creation</h2>
+                <h2 class="menuTitle">Course, Lab, and Section Creation</h2>
                 <div class="menuBox">
                     <!--Course Creation-->
                     <form method="post" action="{% url 'courseManagement' %}">
@@ -176,10 +176,10 @@
             <section>
                 <!--Course edit information-->
                 <h2 class="menuTitle">Edit a Course</h2>
-                <div class="menuBoxMid">
+                <div class="menuBox">
                     <form>
-                        <label for="courseSelect">Select Course:</label><br>
-                        <select id="courseSelect" name="courseSelect">
+                        <label for="editCourseSelect">Select Course:</label><br>
+                        <select id="editCourseSelect" name="editCourseSelect">
                             {% if courses %}
                                 {% for course in courses %}
                                     <option value="{{ course.id }}">{{ course.courseName }}</option>
@@ -187,9 +187,11 @@
                             {% else %}
                                 <option value="">No courses available</option>
                             {% endif %}
-                        </select><br>
-                        <label for="instructorSelect">Change instructor:</label><br>
-                        <select id="instructorSelect" name="instructorSelect">
+                        </select><br> 
+                        <label for="editName">Change Course Name:</label><br>
+                        <input type="text" id="editName" name="editName"><br>
+                        <label for="editInstructorSelect">Change instructor:</label><br>
+                        <select id="editInstructorSelect" name="editInstructorSelect">
                             {% if instructors %}
                                 {% for instructor in instructors %}
                                     <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
@@ -198,8 +200,8 @@
                                 <option value="">No instructors available</option>
                             {% endif %}
                         </select><br>
-                        <label for="time">Change Course Time:</label><br>
-                        <input type="text" id="time" name="time"><br>
+                        <label for="editTime">Change Course Time:</label><br>
+                        <input type="text" id="editTime" name="editTime"><br>
                         <input type="submit" name="editCourseBtn" value="Edit">
                     </form>
                 </div>
