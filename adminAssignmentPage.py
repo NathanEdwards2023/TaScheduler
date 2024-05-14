@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
+
 from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable, UserLabJoinTable, \
     UserSectionJoinTable
 import re
@@ -221,17 +222,17 @@ class AdminAssignmentPage:
             return None
 
     @staticmethod
-    def createSection(sectionName, joinTableId):
+    def createSection(sectionName, courseId, time):
         # Create a new course section
         try:
-            joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
-            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId,
-                                                                name=sectionName).first()
+
+            existingCourseSection = SectionTable.objects.filter(name=sectionName, courseId=courseId).exists()
+
             if existingCourseSection:
                 raise ValueError("Section already exists")
             elif sectionName == "":
                 raise ValueError("Invalid course name")
-            SectionTable.objects.create(name=sectionName, userCourseJoinId=joinTable)
+            SectionTable.objects.create(name=sectionName, courseId=courseId, time=time)
             return "Section created successfully"
         except ObjectDoesNotExist:
             return "Failed to create section"
