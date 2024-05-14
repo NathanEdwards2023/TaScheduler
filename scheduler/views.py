@@ -107,4 +107,17 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': "Account created"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+
+            if 'editAccBtn' in request.POST:
+                user_id = request.POST.get('user_id')
+                email = request.POST.get('email')
+                phone = request.POST.get('phone')
+                address = request.POST.get('address')
+                role = request.POST.get('role')
+                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    adminPage.editAccount(user_id, email, phone, address, role)
+                    return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
+                except ValueError as msg:
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
         return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
