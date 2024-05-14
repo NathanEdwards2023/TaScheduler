@@ -30,26 +30,9 @@ def courseManagement(request):
         else:
             # Redirect non-admin users to another page (e.g., home page)
             return redirect('home')
-
     else:
-        if request.method == 'POST' and 'createCourseBtn' in request.POST:
-            courseName = request.POST.get('courseName')
-            courseTime = request.POST.get('courseTime')
-            courseDays = request.POST.get('courseDays')
-            instructor = request.POST.get('instructorSelect')
-
-            # Create a new CourseTable object
-            admin_page = adminAssignmentPage.AdminAssignmentPage()
-            try:
-                admin_page.createCourse(courseName, instructor)
-                return render(request, 'courseManagement.html',
-                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                               'messages': "Course successfully created"})
-            except ValueError as msg:
-                return render(request, 'courseManagement.html',
-                              {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                               'messages': msg})
-        if request.method == 'POST' and 'editCourseBtn' in request.POST:
+      if request.method == 'POST':
+        if 'editCourseBtn' in request.POST:
             courseID = request.POST.get("editCourseSelect")
             courseName = request.POST.get('editName')
             courseTime = request.POST.get('editTime')
@@ -66,6 +49,28 @@ def courseManagement(request):
                 return render(request, 'courseManagement.html',
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'messages': msg})
+
+          if 'createLabBtn' in request.POST:
+              labSection = request.POST.get('labSection')
+              courseSelect = request.POST.get('courseSelect')
+
+                #try:
+                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
+                  #  if success:
+                   #     messages.success(request, message)
+                    #else:
+                     #   messages.error(request, message)
+                #except ValueError as msg:
+                 #   messages.error(request, msg)
+                try:
+                    admin_page.createLabSection(courseSelect, labSection)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'createMessages': msg})
         return redirect('courseManagement')
     return render(request, 'courseManagement.html')
 
