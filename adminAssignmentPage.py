@@ -181,7 +181,8 @@ class AdminAssignmentPage:
 
             existingUserCourse = UserCourseJoinTable.objects.filter(courseId=course, userId=user).exists()
             if existingUserCourse:
-                raise ValueError("Section already exists")
+                print("Course assignment already exists")
+                raise ValueError("Course assignment already exists")
             UserCourseJoinTable.objects.create(courseId=course, userId=user)
             return "Section created successfully"
         except ObjectDoesNotExist:
@@ -284,6 +285,8 @@ class AdminAssignmentPage:
                 raise ValueError("No such section exists")
             if user is None:
                 raise ValueError("No such user exists")
+            if user.userType != "instructor":
+                raise ValueError("The user is not an instructor")
             existingInsSection = UserSectionJoinTable.objects.filter(sectionId=section, userId=user).exists()
             if existingInsSection:
                 raise ValueError("Instructor already assigned to section")

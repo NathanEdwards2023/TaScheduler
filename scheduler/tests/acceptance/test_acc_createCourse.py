@@ -7,12 +7,14 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, \
+    UserSectionJoinTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from scheduler.views import AdminAccManagement
+
 
 class TestCreateCourseAcc(TestCase):
     def setUp(self):
@@ -87,6 +89,7 @@ class TestCreateCourseAcc(TestCase):
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 302)  # redirects to self
         self.assertFalse(CourseTable.objects.filter(courseName='').exists())
+
 
 if __name__ == '__main__':
     unittest.main()

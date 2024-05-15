@@ -7,12 +7,14 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, \
+    UserSectionJoinTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
 from scheduler.views import AdminAccManagement
+
 
 class TestCreateCourse(unittest.TestCase):
     def setUp(self):
@@ -48,7 +50,6 @@ class TestCreateCourse(unittest.TestCase):
     def test_createCourse_emptyCourseName(self):
         with self.assertRaises(ValueError):
             self.app.createCourse("", self.user1.id)
-
 
 
 if __name__ == '__main__':
