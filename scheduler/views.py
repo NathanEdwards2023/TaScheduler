@@ -7,12 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
-
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
+    SectionTable
 
 
 @login_required(login_url='login')
 def home(request):
+    user = request.user
+    userType = UserTable.objects.get(email=user.email).userType
     return render(request, 'home.html')
 
 @login_required(login_url='login')
@@ -207,5 +209,43 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
-        return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
-          return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
+        return render(request, 'adminAccManagement.html', {'users': users})
+
+class insCourseManagement(View):
+    @staticmethod
+    @login_required(login_url='login')
+    def get(request):
+        TAs = UserTable.objects.filter(userType="ta")
+
+        user = request.user
+        userTable = UserTable.objects.get(email=request.user.email)
+        userCourses = UserCourseJoinTable.objects.filter(userId=userTable)
+        userCourseId = [courseId.courseId for courseId in userCourses]
+        # otherInstructors = UserCourseJoinTable.objects.filter(courseId__in=userCourseId, userType='instructor').distinct()
+        # sections = SectionTable.objects.filter(courseId=userCourses)
+
+
+        #return render(request, 'courseManagement.html', {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'joinEntries': joinEntries, 'labs': labs})
+
+
+
+        if user.is_authenticated and userTable.userType == 'instructor':
+            return render(request, 'insCourseManagement.html',
+                          {'TAs': TAs, 'userCourseId': userCourseId})
+        else:
+
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('home')
+
+    @staticmethod
+    def post(request):
+        users = User.objects.all
+        if request.method == 'POST':
+            if 'deleteAccBtn' in request.POST:
+                #             instructor = request.POST.get('instructorSelect')
+                username = request.POST.get('deleteAccountName')
+                email = request.POST.get('deleteAccountEmail')
+                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                accDeleted = adminPage.deleteAccount(usernameID=username, emailID=email)
+                return render(request, 'adminAccManagement.html', {'users': users, 'message': accDeleted})
+        return render(request, 'adminAccManagement.html', {'users': users})

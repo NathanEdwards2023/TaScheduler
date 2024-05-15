@@ -14,7 +14,11 @@
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'profile' %}">Profile</a></li>
                 <li><a href="#">Notifications</a></li>
-                <li><a href="{% url 'courseManagement' %}">Course Management</a></li>
+                {% if userType == 'admin' %}
+                    <li><a href="{% url 'courseManagement' %}">Course Management</a></li>
+                {% elif userType == 'instructor' %}
+                    <li><a href="{% url 'insCourseManagement' %}">Course Management</a></li>
+                {% endif %}
                 <li><a href="{% url 'adminAccManagement' %}">Account Management</a></li>
                 <li><a href="#">Settings</a></li>
             </ul>
