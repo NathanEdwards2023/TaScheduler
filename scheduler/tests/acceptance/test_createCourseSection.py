@@ -32,13 +32,10 @@ class TestCreateSectionACCEPTANCE(TestCase):
 
         self.course1 = CourseTable(courseName="unitTest")
         self.course1.save()
-        self.joinTable = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
-        self.joinTable.save()
 
     def tearDown(self):
         # Clean up test data
         self.course1.delete()
-        self.joinTable.delete()
         self.user1.delete()
         self.user1Account.delete()
         self.user2.delete()
@@ -64,7 +61,8 @@ class TestCreateSectionACCEPTANCE(TestCase):
     def test_adminCourseManagement_CreateSection(self):
         data = {
             'courseSection': "acceptanceTest",
-            'userSectionSelect': self.joinTable.id,
+            'courseSectionTime': "10:20AM",
+            'courseSectionSelect': self.course1.id,
             'createSectionBtn': 'Create Course Section'
         }
         request = RequestFactory().post(reverse('courseManagement'), data=data)
@@ -72,7 +70,7 @@ class TestCreateSectionACCEPTANCE(TestCase):
 
         scheduler.views.courseManagement(request)
 
-        self.assertTrue(SectionTable.objects.filter(name='acceptanceTest', userCourseJoinId=self.joinTable.id).exists())
+        self.assertTrue(SectionTable.objects.filter(name='acceptanceTest', courseId=self.course1).exists())
 
 
 if __name__ == '__main__':

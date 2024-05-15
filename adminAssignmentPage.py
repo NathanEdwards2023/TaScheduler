@@ -214,14 +214,16 @@ class AdminAssignmentPage:
     def createSection(sectionName, courseId, time):
         # Create a new course section
         try:
-
-            existingCourseSection = SectionTable.objects.filter(name=sectionName, courseId=courseId).exists()
+            print("TEST made it")
+            course = CourseTable.objects.filter(id=courseId).first()
+            existingCourseSection = SectionTable.objects.filter(name=sectionName, courseId=course).exists()
 
             if existingCourseSection:
                 raise ValueError("Section already exists")
             elif sectionName == "":
                 raise ValueError("Invalid course name")
-            SectionTable.objects.create(name=sectionName, courseId=courseId, time=time)
+            print(sectionName, course, time)
+            SectionTable.objects.create(name=sectionName, courseId=course, time=time)
             return "Section created successfully"
         except ObjectDoesNotExist:
             return "Failed to create section"
