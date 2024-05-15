@@ -38,8 +38,12 @@ class AdminAssignmentPage:
         try:
             course = CourseTable.objects.get(id=course_id)
 
+            if courseName == "":
+                raise ValueError("Invalid course name")
+
             if instructorID:
-                course.instructorID = instructorID
+                instructor = UserTable.objects.get(id=instructorID)
+                course.instructorId = instructor.id
 
             if courseName:
                 course.courseName = courseName
@@ -109,10 +113,25 @@ class AdminAssignmentPage:
         newUser.save()
         return True
 
-    def editAccount(self, user_id, email, phone, address, role):
-        # Edit an existing user account
-        pass
+    def editAccount(self, email, newEmail, phone, address, role):
+        try:
+            user = UserTable.objects.get(email=email)
 
+            user.email = newEmail
+            user.phone = phone
+            user.address = address
+            user.userType = role
+            user.save()
+
+            account = User.objects.get(email=email)
+            account.email = newEmail
+            account.save()
+
+            return user
+        except UserTable.DoesNotExist:
+            raise ValueError("User account does not exist.")
+        except Exception as e:
+            raise ValueError(str(e))
     # needs to be static
     @staticmethod
     def deleteAccount(usernameID, emailID):
