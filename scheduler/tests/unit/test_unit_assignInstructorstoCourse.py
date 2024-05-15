@@ -5,10 +5,10 @@ import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 
-
 from scheduler.views import AdminAccManagement
 
-class MyTestCase(unittest.TestCase):
+
+class AssignInstructorsUnitTest(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         self.user1 = UserTable(firstName="instructor", lastName="instructor", email="insinstructor@uwm.edu",
@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
 
         self.user2 = UserTable(firstName="Matt", lastName="Kretsch", email="mattins@uwm.edu",
                                phone="262-213-5555",
-                               address="some address", userType="instructor")
+                               address="some address", userType="ta")
         self.user2.save()
 
         self.course1 = CourseTable(courseName="All about Matt", time="10:30am")
@@ -34,24 +34,34 @@ class MyTestCase(unittest.TestCase):
         self.course2.delete()
 
     def test_assignIns_correctly(self):
-        self.app.assignInstructorToCourse("Course1", "")
-        course = CourseTable.objects.get(courseName="Course1")
-        self.assertIsNotNone(course)
+        # Test assigning Instructor with valid data
+        self.app.assignInstructorToCourse(self.course1.id, self.user1.id)
+        courseJoin = UserCourseJoinTable.objects.filter(courseId=self.course1.id, userId=self.user1).first()
+        self.assertIsNotNone(courseJoin)
+        self.assertEqual((courseJoin.courseId, courseJoin.userId), (self.course1, self.user1))
 
-    def test_createCourse_duplicateName(self):
-        self.app.createCourse("Course1", "")
+    def test_assignIns_UserNotIns(self):
+        # Test assigning Instructor with a TA instead of an Instructor
         with self.assertRaises(ValueError):
-            self.app.createCourse("Course1", "")
-        self.assertEqual(CourseTable.objects.filter(courseName="Course1").count(), 1)
+            self.app.assignInstructorToCourse(self.course1.id, self.user2.id)
 
-    def test_createCourse_emptyCourseName(self):
+    def test_assignIns_noUser(self):
+        # Test assigning Instructor with no user specified
         with self.assertRaises(ValueError):
-            self.app.createCourse("", "")
+            self.app.assignInstructorToCourse(self.course1.id, "")
 
-    def test_createCourse_withInstructor(self):
-        self.app.createCourse("Course1", self.user1.id)
-        course = CourseTable.objects.get(courseName="Course1")
-        self.assertIsNotNone(course)
+    def test_assignIns_noCourse(self):
+        # Test assigning Instructor with no course specified
+        with self.assertRaises(ValueError):
+            self.app.assignInstructorToCourse("", self.user2.id)
+
+    def test_assignIns_duplicateAssignment(self):
+        # Test making an assignment that already exists
+        self.app.assignInstructorToCourse(self.course1.id, self.user1.id)
+
+        # Test making an assignment that already exists
+        with self.assertRaises(ValueError):
+            self.app.assignInstructorToCourse(self.course1.id, self.user1.id)
 
 
 if __name__ == '__main__':
