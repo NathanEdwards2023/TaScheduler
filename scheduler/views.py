@@ -119,7 +119,7 @@ def courseManagement(request):
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Lab successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
