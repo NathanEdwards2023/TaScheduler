@@ -6,10 +6,9 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-
-
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
+
 
 
 @login_required(login_url='login')
@@ -96,10 +95,11 @@ def courseManagement(request):
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'deleteMessages': msg})
 
-            if'assignTAToLabBtn' in request.POST:
+            if 'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
                 user_id = request.POST.get('userId')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
+
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
                     messages.success(request, message, extra_tags='lab_success')
@@ -110,6 +110,7 @@ def courseManagement(request):
             if 'createLabBtn' in request.POST:
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
+
 
                 #try:
                  #   success, message = admin_page.createLabSection(courseSelect, labSection)
@@ -188,3 +189,4 @@ class AdminAccManagement(View):
                                   {'users': users, 'messageCreateAcc': "Account created"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
+
