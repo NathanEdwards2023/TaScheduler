@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
 
 
 @login_required(login_url='login')
