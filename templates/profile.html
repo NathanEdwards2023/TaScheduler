@@ -37,6 +37,8 @@
             <div class="menuBox">
                 <form method="post" action="{% url 'adminAccManagement' %}">
                     {% csrf_token %}
+                    <label for="userEmail">Current Email:</label><br>
+                    <span id="userEmail">{{ user_data.email }}</span><br>
                     <label for="userType">User Type:</label><br>
                     <span id="userType">{{ user_data.userType }}</span><br>
                     <label for="editAccountFirstName">First Name:</label><br>

@@ -113,18 +113,27 @@ class AdminAssignmentPage:
         newUser.save()
         return True
 
-    def editAccount(self, email, newEmail, phone, address, role):
+    def editAccount(self, old_email, first_name, last_name, email, phone, address, skills):
         try:
-            user = UserTable.objects.get(email=email)
+            user = UserTable.objects.get(email=old_email)
 
-            user.email = newEmail
+            if email != old_email:
+                # Check if the new email is already in use
+                if UserTable.objects.filter(email=email).exclude(email=old_email).exists():
+                    raise ValueError("New email is already in use by another user.")
+
+            # Update user attributes
+            user.firstName = first_name
+            user.lastName = last_name
+            user.email = email
             user.phone = phone
             user.address = address
-            user.userType = role
+            user.skills = skills
             user.save()
 
-            account = User.objects.get(email=email)
-            account.email = newEmail
+            # Also update the associated User model email if changed
+            account = User.objects.get(email=old_email)
+            account.email = email
             account.save()
 
             return user
@@ -132,6 +141,7 @@ class AdminAssignmentPage:
             raise ValueError("User account does not exist.")
         except Exception as e:
             raise ValueError(str(e))
+
     # needs to be static
     @staticmethod
     def deleteAccount(usernameID, emailID):

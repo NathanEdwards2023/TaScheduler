@@ -10,10 +10,10 @@ import adminAssignmentPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
 
 
-
 @login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
+
 
 @login_required(login_url='login')
 def profile(request):
@@ -21,13 +21,13 @@ def profile(request):
     user_data = UserTable.objects.get(email=user.email)
     return render(request, 'profile.html', {'user_data': user_data})
 
+
 def courseManagement(request):
     courses = CourseTable.objects.all()
     TAs = UserTable.objects.filter(userType="ta")
     instructors = UserTable.objects.filter(userType="instructor")
     labs = LabTable.objects.all()
     joinEntries = UserCourseJoinTable.objects.all()
-
 
     if request.method == 'GET':
         user = request.user
@@ -116,15 +116,14 @@ def courseManagement(request):
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
 
-
                 #try:
-                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
-                  #  if success:
-                   #     messages.success(request, message)
-                    #else:
-                     #   messages.error(request, message)
+                #   success, message = admin_page.createLabSection(courseSelect, labSection)
+                #  if success:
+                #     messages.success(request, message)
+                #else:
+                #   messages.error(request, message)
                 #except ValueError as msg:
-                 #   messages.error(request, msg)
+                #   messages.error(request, msg)
                 try:
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
@@ -135,8 +134,24 @@ def courseManagement(request):
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
 
-        return redirect('courseManagement')
+            if 'editCourseBtn' in request.POST:
+                courseID = request.POST.get("editCourseSelect")
+                courseName = request.POST.get('editCourseName')
+                courseTime = request.POST.get('editTime')
+                instructor = request.POST.get('editInstructorSelect')
+                # Create a new CourseTable object
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.editCourse(courseID, courseName, instructor, courseTime)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'messages': "Course successfully created"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'messages': str(msg)})
 
+        return redirect('courseManagement')
 
 
 def createAccount(request):
@@ -196,16 +211,19 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
 
             if 'editAccBtn' in request.POST:
-                user_id = request.POST.get('user_id')
-                email = request.POST.get('email')
-                phone = request.POST.get('phone')
-                address = request.POST.get('address')
-                role = request.POST.get('role')
+                old_email = request.POST.get('userEmail')
+                first_name = request.POST.get('editAccountFirstName')
+                last_name = request.POST.get('editAccountLastName')
+                email = request.POST.get('editAccountEmail')
+                phone = request.POST.get('editAccountPhoneNumber')
+                address = request.POST.get('editAccountAddress')
+                skills = request.POST.get('editAccountSkills')
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
                 try:
-                    adminPage.editAccount(user_id, email, phone, address, role)
+                    adminPage.editAccount(old_email, first_name, last_name, email, phone, address, skills)
                     return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
                 except ValueError as msg:
-                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+                    return render(request, 'adminAccManagement.html', {'messageEditAcc': msg})
+
         return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
-          return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
+        #return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
