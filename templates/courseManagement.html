@@ -33,32 +33,55 @@
     <!--Course Management Menu-->
     <main>
         <div class="menuContainer">
-        <!--course creation-->
+        <!--Course, Section, and Lab Creation Section(1st column)-->
             <section>
-                <h2 class="menuTitle">Course and Lab Creation</h2>
+                <h2 class="menuTitle">Course, Lab, and Section Creation</h2>
                 <div class="menuBox">
+                    <!--Course Creation-->
                     <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
                         <label for="courseName">Course Name:</label><br>
                         <input type="text" id="courseName" name="courseName"><br>
-                        <label for="instructorSelect">Select Instructor:</label><br>
-                        <select id="instructorSelect" name="instructorSelect">
+                        <label for="instructorSelectForToo">Select Instructor:</label><br>
+                        <select id="instructorSelectForToo" name="instructorSelect">
                             {% if instructors %}
+                                <option value="">None</option>
                                 {% for instructor in instructors %}
-                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                    <option value={{ instructor.id }}>{{ instructor.firstName}} {{instructor.lastName }}</option>
                                 {% endfor %}
                             {% else %}
                                 <option value="">No instructors available</option>
                             {% endif %}
                         </select><br><br>
-                        <input type="submit" name = "createCourseBtn" value="Submit">
+                        <input type="submit" name = "createCourseBtn" value="Create Course">
                     </form>
+                    <!--Course Section Creation-->
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
+                        <label for="courseSection">Section Name:</label><br>
+                        <input type="text" id="courseSection" name="courseSection"><br>
+                        <label for="courseSectionTime">Section Time:</label><br>
+                        <input type="text" id="courseSectionTime" name="courseSectionTime"><br>
+                        <label for="courseSectionSelect">User:</label><br>
+                        <select id="courseSectionSelect" name="courseSectionSelect">
+                            {% if courses %}
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.courseName}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No course-user entries available</option>
+                            {% endif %}
+                        </select><br><br>
+
+                        <input type="submit" name = "createSectionBtn" value="Create Course Section">                    
+                    </form>
+                    <!--Lab Section Creation-->
                     <form method="post" action="{% url 'courseManagement' %}">
                         {% csrf_token %}
                         <label for="courseName">Lab Section:</label><br>
-                        <input type="text" id="labSection" name="labSection"><br>
-                        <label for="courseName">Course:</label><br>
-                        <select id="courseSelect" name="courseSelect">
+                        <label for="labSection"></label><input type="text" id="labSection" name="labSection"><br>
+                        <label for="courseSelectToo">Course:</label><br>
+                        <select id="courseSelectToo" name="courseSelect">
                             {% if courses %}
                                 {% for course in courses %}
                                     <option value="{{ course.id }}">{{ course.courseName }}</option>
@@ -77,20 +100,58 @@
                                 <option value="">No TAs available</option>
                             {% endif %}
                         </select><br><br>
-                        <input type="submit" name = "createLabBtn" value="Submit">
+                        <input type="submit" name = "createLabBtn" value="Create Lab Section">
                     </form>
-                    {% if messages %}
-                        {{ messages }}
+                    {% if createMessages %}
+                        {{ createMessages }}
                     {% endif %}
                 </div>
             </section>
-        <!--assign to course-->
+            <!--Course Assignments(2nd column)-->
             <section>
-                <h2 class="menuTitle">Assign to Course</h2>
+                <!--Assign TA to Course Section-->
+                <h2 class="menuTitle">Assign TA to Course</h2>
+                <div class="menuBoxMid">
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="courseSelectAssignTa">Select Course:</label>
+                            <select id="courseSelectAssignTa" name="courseId" required>
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
+                                {% empty %}
+                                    <option>No courses available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taSelectCourse">Select TA:</label>
+                            <select id="taSelectCourse" name="userId" required> <!-- Updated the name attribute -->
+                                {% for ta in TAs %}
+                                    <option value="{{ ta.id }}">{{ ta.firstName }} {{ ta.lastName }}</option>
+                                {% empty %}
+                                    <option>No TAs available</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="submit" name="assignTAToCourseBtn" value="Assign TA" class="submit-btn">
+                        <div class="messages">
+                            {% for message in messages %}
+                                {% if 'course_assign' in message.tags %}
+                                    <div class="{{ message.tags }}">
+                                    {{ message }}
+                                     </div>
+                                 {% endif %}
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <!--Assign Instructor to Course-->
+                <h2 class="menuTitle">Assign Instructor to Course</h2>
                 <div class="menuBoxMid">
                     <form>
-                        <label for="courseSelect">Select Course:</label><br>
-                        <select id="courseSelect" name="courseSelect">
+                        <label for="courseSelectFor">Select Course:</label><br>
+                        <select id="courseSelectFor" name="courseSelect">
                             {% if courses %}
                                 {% for course in courses %}
                                     <option value="{{ course.id }}">{{ course.courseName }}</option>
@@ -99,8 +160,8 @@
                                 <option value="">No courses available</option>
                             {% endif %}
                         </select><br>
-                        <label for="instructorSelect">Select Instructor:</label><br>
-                        <select id="instructorSelect" name="instructorSelect">
+                        <label for="instructorSelectFor">Select Instructor:</label><br>
+                        <select id="instructorSelectFor" name="instructorSelect">
                             {% if instructors %}
                                 {% for instructor in instructors %}
                                     <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
@@ -112,10 +173,45 @@
                         <input type="submit" name = "assignBtn" value="Assign">
                     </form>
                 </div>
-
-                <h2 class="menuTitle">Course and Lab deletion</h2>
-                <div class="menuBoxMid">
+            </section>
+            <!--Course editing and deletion-->
+            <section>
+                <!--Course edit information-->
+                <h2 class="menuTitle">Edit a Course</h2>
+                <div class="menuBox">
                     <form>
+                        <label for="editCourseSelect">Select Course:</label><br>
+                        <select id="editCourseSelect" name="editCourseSelect">
+                            {% if courses %}
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No courses available</option>
+                            {% endif %}
+                        </select><br> 
+                        <label for="editName">Change Course Name:</label><br>
+                        <input type="text" id="editName" name="editName"><br>
+                        <label for="editInstructorSelect">Change instructor:</label><br>
+                        <select id="editInstructorSelect" name="editInstructorSelect">
+                            {% if instructors %}
+                                {% for instructor in instructors %}
+                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No instructors available</option>
+                            {% endif %}
+                        </select><br>
+                        <label for="editTime">Change Course Time:</label><br>
+                        <input type="text" id="editTime" name="editTime"><br>
+                        <input type="submit" name="editCourseBtn" value="Edit">
+                    </form>
+                </div>
+                <!--Course and Lab Deletion-->
+                <h2 class="menuTitle">Course and Lab Deletion</h2>
+                <div class="menuBoxMid">
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
                         <label for="sectionSelect">Select Section:</label><br>
                         <select id="sectionSelect" name="sectionSelect">
                             {% if courses %}
@@ -128,93 +224,75 @@
                         </select><br>
                         <input type="submit" name = "deleteBtn" value="Delete">
                     </form>
+                    {% if deleteMessages %}
+                        {{ deleteMessages }}
+                    {% endif %}
                 </div>
             </section>
         <!--assign to lab-->
             <section>
                 <h2 class="menuTitle">Assign TA to Lab Section</h2>
                 <div class="menuBox">
-                    <div class="assignContainer">
-                        <label for="labCourse">Course:</label>
-                        <select id="labCourse" name="labCourse">
-                            {% if courses %}
-                                {% for course in courses %}
-                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No courses available</option>
-                            {% endif %}
-                        </select>
-                        <label for="labTA">TA:</label>
-                        <select id="labTA" name="labTA">
-                            {% if TAs %}
-                                {% for TA in TAs %}
-                                    <option value="{{ TA.userID }}">{{ TA.firstName}} {{TA.lastName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No TAs available</option>
-                            {% endif %}
-                        </select>
-                        <label for="labSection">Lab Section:</label>
-                        <select id="labSection" name="labSection">
-                            {% if labs %}
-                                {% for lab in labs %}
-                                    <option value="{{ lab.sectionNumber }}">{{ lab.sectionNumber }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No labs available</option>
-                            {% endif %}
-                        </select>
-                        <button class="submitButton">Assign</button>
-                    </div>
-                    <div class="scrollingList">
-                        <!--TA assignments-->
-                        <ul>
-                            {% for lab in labs %}
-                                {% with labTA=lab.taId %}
-                                    <li>{{ labTA.firstName }} {{ labTA.lastName }}
-                                        <ul>
-                                            <li>Course: {{ lab.courseId.courseName }} Lab Section: {{ lab.sectionNumber }}</li>
-                                        </ul>
-                                    </li>
-                                {% endwith %}
-                            {% empty %}
-                                <li>No Assignments</li>
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
+                        <label for="courseId">Course:</label>
+                        <select id="courseId" name="courseId">
+                            {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.courseName }}</option>
                             {% endfor %}
-                        </ul>
+                        </select>
+                        <label for="userId">TA:</label>
+                        <select id="userId" name="userId">
+                            {% for ta in TAs %}
+                                <option value="{{ ta.id }}">{{ ta.firstName }} {{ ta.lastName }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="labId">Lab Section:</label>
+                        <select id="labId" name="labId">
+                            {% for lab in labs %}
+                                <option value="{{ lab.id }}">{{ lab.sectionNumber }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="submit" name="assignTAToLabBtn" value="Assign TA" class="submit-btn">
+                       <div class="messages">
+                            {% for message in messages %}
+                                {% if 'lab_assign' in message.tags %}
+                                    <div class="{{ message.tags }}">
+                                    {{ message }}
+                                    </div>
+                            {% endif %}
+                    {% endfor %}
                     </div>
+                    </form>
                 </div>
             </section>
-        <section>
-            <h2 class="menuTitle">Edit a Course</h2>
-            <div class="menuBox">
-                <form>
-                        <label for="courseSelect">Select Course:</label><br>
-                        <select id="courseSelect" name="courseSelect">
-                            {% if courses %}
-                                {% for course in courses %}
-                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No courses available</option>
-                            {% endif %}
-                        </select><br>
-                        <label for="instructorSelect">Change instructor:</label><br>
-                        <select id="instructorSelect" name="instructorSelect">
-                            {% if instructors %}
-                                {% for instructor in instructors %}
-                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="">No instructors available</option>
-                            {% endif %}
-                        </select><br>
-                        <label for="time">Change Course Time:</label><br>
-                        <input type="text" id="time" name="time"><br>
-                        <input type="submit" name="editCourseBtn" value="Edit">
-                    </form>
-            </div>
-        </section>
+        <!-- TA Skills Section -->
+<section>
+    <h2 class="menuTitle">TA Skills</h2>
+    <div class="menuBoxMid">
+        {% if TAs %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>TA Name</th>
+                        <th>Skills</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ta in TAs %}
+                        <tr>
+                            <td>{{ ta.firstName }} {{ ta.lastName }}</td>
+                            <td>{{ ta.skills }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No TAs available</p>
+        {% endif %}
+    </div>
+</section>
+
         </div>
     </main>
 </body>

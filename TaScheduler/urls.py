@@ -27,7 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=True)),
-    path('createAccount/', views.createAccount, name='createAccount'),
+    path('createAccount/', AdminAccManagement.as_view(), name='createAccount'),
     path('home/', views.home, name='home'),
     path('courseManagement/', views.courseManagement, name='courseManagement'),
     path('adminAccManagement/', AdminAccManagement.as_view(), name='adminAccManagement'),
