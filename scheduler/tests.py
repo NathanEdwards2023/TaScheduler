@@ -7,7 +7,7 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -144,7 +144,7 @@ class TestCreateCourseAcc(TestCase):
 
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
 
     def test_invalid_course_creation(self):
@@ -155,7 +155,7 @@ class TestCreateCourseAcc(TestCase):
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 302)  # redirects to self
-        self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
+        self.assertFalse(CourseTable.objects.filter(courseName='').exists())
 
 
 class TestEditCourse(unittest.TestCase):
@@ -636,6 +636,107 @@ class TestCreateLabSection(unittest.TestCase):
             self.admin_page.createLabSection(courseId=self.course.id, sectionNumber="Lab #001")
         joinentry.delete()
         user.delete()
+
+class TestDeleteCourseAcceptance(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create(username='admin', is_staff=True)
+        self.client.force_login(self.admin_user)
+        self.admin_page = AdminAssignmentPage()
+
+        # Create a course
+        self.course = CourseTable.objects.create(courseName="Test Course")
+
+        # Create users
+        self.user1 = UserTable.objects.create(email="user01@example.com")
+        self.user2 = UserTable.objects.create(email="user02@example.com")
+
+        # Create user-course associations
+        self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)
+        self.user_course2 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user2)
+
+        # Create sections associated with the course
+        self.section1 = SectionTable.objects.create(name="Section 1", userCourseJoinId=self.user_course1)
+        self.section2 = SectionTable.objects.create(name="Section 2", userCourseJoinId=self.user_course2)
+
+        # Create lab sections associated with the course
+        self.lab1 = LabTable.objects.create(sectionNumber="Lab 001", sectionId=self.section1)
+        self.lab2 = LabTable.objects.create(sectionNumber="Lab 002", sectionId=self.section2)
+
+    def tearDown(self):
+        # Clean up after each test by deleting created objects
+        self.course.delete()
+        self.lab1.delete()
+        self.lab2.delete()
+        self.user_course1.delete()
+        self.user_course2.delete()
+        self.user1.delete()
+        self.user2.delete()
+
+    def test_delete_course_acceptance(self):
+        # Make a request to delete the course
+        response = self.client.post(reverse('delete_course'), {'id': self.course.id})
+
+        # Verify that the course is deleted and associated objects are also deleted
+        self.assertFalse(CourseTable.objects.filter(id=self.course.id).exists())
+        self.assertFalse(UserCourseJoinTable.objects.filter(courseId=self.course).exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 1").exists())
+        self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_course_not_found_acceptance(self):
+        # Make a request to delete a course that does not exist
+        response = self.client.post(reverse('delete_course'), {'id': 999})
+
+        # Verify that the response indicates failure and no changes are made
+        self.assertEqual(response.status_code, 404)  # or whatever status code indicates failure
+        self.assertTrue(CourseTable.objects.filter(id=self.course.id).exists())  # Course should still exist
+
+class TestCreateLabSectionAcceptance(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create(username='admin', is_staff=True)
+        self.client.force_login(self.admin_user)
+        self.admin_page = AdminAssignmentPage()
+        self.course = CourseTable.objects.create(courseName="Test Course")
+
+    def tearDown(self):
+        # Clean up the course created during testing
+        self.course.delete()
+
+    def test_create_lab_section_acceptance(self):
+        # Make a request to create a lab section
+        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
+
+        # Verify that lab section is created
+        self.assertTrue(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_lab_section_invalid_course_acceptance(self):
+        # Make a request to create a lab section with an invalid course ID
+        response = self.client.post(reverse('create_lab_section'), {'courseId': 999, 'sectionNumber': 'Lab #001'})
+
+        # Verify that the response indicates failure and no lab section is created
+        self.assertEqual(response.status_code, 404)  # or whatever status code indicates failure
+        self.assertFalse(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
+
+    def test_create_lab_section_with_existing_name_acceptance(self):
+        # Create a lab section with the same name to emulate it already exists
+        SectionTable.objects.create(name="Lab #001", userCourseJoinId=self.course)
+
+        # Make a request to create a lab section with the same name
+        response = self.client.post(reverse('create_lab_section'),
+                                    {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
+
+        # Verify that the response indicates failure and no duplicate lab section is created
+        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
+        self.assertEqual(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).count(), 1)
+
+    def test_create_lab_section_with_empty_name_acceptance(self):
+        # Make a request to create a lab section with an empty name
+        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': ''})
+
+        # Verify that the response indicates failure and no lab section is created
+        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
+        self.assertFalse(SectionTable.objects.filter(userCourseJoinId=self.course).exists())
 
 class TestGetRole(unittest.TestCase):
     def setUp(self):
