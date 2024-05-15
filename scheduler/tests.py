@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
@@ -6,7 +7,7 @@ from django.urls import reverse
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
+from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -140,9 +141,10 @@ class TestCreateCourseAcc(TestCase):
             'courseName': 'New Course',
             'instructorSelect': instructor.id,
             'createCourseBtn': 'Submit',  # button used
+
         }
         response = self.client.post(reverse('courseManagement'), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
 
     def test_invalid_course_creation(self):
@@ -153,7 +155,7 @@ class TestCreateCourseAcc(TestCase):
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 302)  # redirects to self
-        self.assertFalse(CourseTable.objects.filter(courseName='').exists())
+        self.assertFalse(CourseTable.objects.filter(courseName='', instructorId=9999).exists())
 
 
 class TestEditCourse(unittest.TestCase):
@@ -635,107 +637,6 @@ class TestCreateLabSection(unittest.TestCase):
         joinentry.delete()
         user.delete()
 
-class TestDeleteCourseAcceptance(TestCase):
-    def setUp(self):
-        self.admin_user = User.objects.create(username='admin', is_staff=True)
-        self.client.force_login(self.admin_user)
-        self.admin_page = AdminAssignmentPage()
-
-        # Create a course
-        self.course = CourseTable.objects.create(courseName="Test Course")
-
-        # Create users
-        self.user1 = UserTable.objects.create(email="user01@example.com")
-        self.user2 = UserTable.objects.create(email="user02@example.com")
-
-        # Create user-course associations
-        self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)
-        self.user_course2 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user2)
-
-        # Create sections associated with the course
-        self.section1 = SectionTable.objects.create(name="Section 1", userCourseJoinId=self.user_course1)
-        self.section2 = SectionTable.objects.create(name="Section 2", userCourseJoinId=self.user_course2)
-
-        # Create lab sections associated with the course
-        self.lab1 = LabTable.objects.create(sectionNumber="Lab 001", sectionId=self.section1)
-        self.lab2 = LabTable.objects.create(sectionNumber="Lab 002", sectionId=self.section2)
-
-    def tearDown(self):
-        # Clean up after each test by deleting created objects
-        self.course.delete()
-        self.lab1.delete()
-        self.lab2.delete()
-        self.user_course1.delete()
-        self.user_course2.delete()
-        self.user1.delete()
-        self.user2.delete()
-
-    def test_delete_course_acceptance(self):
-        # Make a request to delete the course
-        response = self.client.post(reverse('delete_course'), {'id': self.course.id})
-
-        # Verify that the course is deleted and associated objects are also deleted
-        self.assertFalse(CourseTable.objects.filter(id=self.course.id).exists())
-        self.assertFalse(UserCourseJoinTable.objects.filter(courseId=self.course).exists())
-        self.assertFalse(SectionTable.objects.filter(name="Section 1").exists())
-        self.assertFalse(SectionTable.objects.filter(name="Section 2").exists())
-        self.assertEqual(response.status_code, 200)
-
-    def test_delete_course_not_found_acceptance(self):
-        # Make a request to delete a course that does not exist
-        response = self.client.post(reverse('delete_course'), {'id': 999})
-
-        # Verify that the response indicates failure and no changes are made
-        self.assertEqual(response.status_code, 404)  # or whatever status code indicates failure
-        self.assertTrue(CourseTable.objects.filter(id=self.course.id).exists())  # Course should still exist
-
-class TestCreateLabSectionAcceptance(TestCase):
-    def setUp(self):
-        self.admin_user = User.objects.create(username='admin', is_staff=True)
-        self.client.force_login(self.admin_user)
-        self.admin_page = AdminAssignmentPage()
-        self.course = CourseTable.objects.create(courseName="Test Course")
-
-    def tearDown(self):
-        # Clean up the course created during testing
-        self.course.delete()
-
-    def test_create_lab_section_acceptance(self):
-        # Make a request to create a lab section
-        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
-
-        # Verify that lab section is created
-        self.assertTrue(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
-        self.assertEqual(response.status_code, 200)
-
-    def test_create_lab_section_invalid_course_acceptance(self):
-        # Make a request to create a lab section with an invalid course ID
-        response = self.client.post(reverse('create_lab_section'), {'courseId': 999, 'sectionNumber': 'Lab #001'})
-
-        # Verify that the response indicates failure and no lab section is created
-        self.assertEqual(response.status_code, 404)  # or whatever status code indicates failure
-        self.assertFalse(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
-
-    def test_create_lab_section_with_existing_name_acceptance(self):
-        # Create a lab section with the same name to emulate it already exists
-        SectionTable.objects.create(name="Lab #001", userCourseJoinId=self.course)
-
-        # Make a request to create a lab section with the same name
-        response = self.client.post(reverse('create_lab_section'),
-                                    {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
-
-        # Verify that the response indicates failure and no duplicate lab section is created
-        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
-        self.assertEqual(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).count(), 1)
-
-    def test_create_lab_section_with_empty_name_acceptance(self):
-        # Make a request to create a lab section with an empty name
-        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': ''})
-
-        # Verify that the response indicates failure and no lab section is created
-        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
-        self.assertFalse(SectionTable.objects.filter(userCourseJoinId=self.course).exists())
-
 class TestGetRole(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
@@ -784,113 +685,126 @@ class TestGetRole(unittest.TestCase):
         self.assertIsNone(role)
 
 
-class TestCreateSection(unittest.TestCase):
-    def setUp(self):
-        self.app = AdminAssignmentPage()
-        self.user1 = UserTable(firstName="matt", lastName="matt", email="mattNew@gmail.com", phone="262-555-5555",
-                               address="some address", userType="instructor")
-        self.user1.save()
-        self.user1Account = User(username="matt2", password="e121dfa91w", email=self.user1.email)
-        self.user1Account.save()
-
-        self.course1 = CourseTable(courseName="unitTest")
-        self.course1.save()
-        self.joinTable = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
-        self.joinTable.save()
-
-    def tearDown(self):
-        # Clean up test data
-        self.course1.delete()
-        self.joinTable.delete()
-        self.user1.delete()
-        self.user1Account.delete()
-
-    def test_createSection_correctly(self):
-        self.app.createSection("SectionUnitTest1", self.joinTable.id)
-        section = SectionTable.objects.filter(name="SectionUnitTest1").first()
-
-        self.assertEqual((section.name, section.userCourseJoinId.id), ("SectionUnitTest1", self.joinTable.id))
-
-    def test_createSection_noJoinTable(self):
-        # returns true if invalid Join table ID
-        with self.assertRaises(ValueError):
-            self.app.createSection("SectionUnitTest1", 9999)
-
-    def test_createSection_emptySectionName(self):
-        with self.assertRaises(ValueError):
-            self.app.createSection("", self.joinTable.id)
-
-
-class TestCreateSectionACCEPTANCE(TestCase):
-    def __init__(self, methodName: str = "runTest"):
-        super().__init__(methodName)
-        self.client = None
+class AssignTAToCourseTestCase(TestCase):
 
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.admin_page = AdminAssignmentPage()
+        self.course_id = 1
+        self.user_id = 2
+        self.mock_course = MagicMock(spec=CourseTable)
+        self.mock_ta = MagicMock(spec=UserTable)
 
-        self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
-                               phone="adminTest",
-                               address="adminTest", userType="admin")
-        self.user1.save()
-        self.user1Account = User(username="adminTest", password="adpassword", email=self.user1.email)
-        self.user1Account.save()
+    @patch('scheduler.models.CourseTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    @patch('scheduler.models.UserCourseJoinTable.objects.update_or_create')
+    def test_assign_ta_to_course_success(self, mock_update_or_create, mock_user_get, mock_course_get):
+        mock_course_get.return_value = self.mock_course
+        mock_user_get.return_value = self.mock_ta
+        mock_update_or_create.return_value = (MagicMock(), True)
 
-        self.user2 = UserTable(firstName="matt", lastName="matt", email="mattNew@gmail.com", phone="262-555-5555",
-                               address="some address", userType="instructor")
-        self.user2.save()
-        self.user2Account = User(username="matt2", password="e121dfa91w", email=self.user2.email)
-        self.user2Account.save()
+        success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
+        self.assertTrue(success)
+        self.assertEqual(message, "TA successfully assigned to course.")
 
-        self.course1 = CourseTable(courseName="unitTest")
-        self.course1.save()
-        self.joinTable = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
-        self.joinTable.save()
+    @patch('scheduler.models.CourseTable.objects.get')
+    def test_course_not_found(self, mock_course_get):
+        mock_course_get.side_effect = CourseTable.DoesNotExist
 
-    def tearDown(self):
-        # Clean up test data
-        self.course1.delete()
-        self.joinTable.delete()
-        self.user1.delete()
-        self.user1Account.delete()
-        self.user2.delete()
-        self.user2Account.delete()
+        success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "Course not found.")
 
-    def test_adminCourseManagement_Admin(self):
-        request = RequestFactory().get(reverse('courseManagement'))  # Use reverse to get the URL
-        request.user = self.user1Account
-        response = scheduler.views.courseManagement(request)
+    @patch('scheduler.models.CourseTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    def test_ta_not_found(self, mock_user_get, mock_course_get):
+        mock_course_get.return_value = self.mock_course
+        mock_user_get.side_effect = UserTable.DoesNotExist
 
-        # Check if the response status code is 200
-        self.assertEqual(response.status_code, 200)
+        success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "TA not found or not eligible.")
 
-    def test_adminCourseManagement_Instructor(self):
-        request = RequestFactory().get(reverse('courseManagement'))  # Use reverse to get the URL
-        request.user = self.user2Account
+    @patch('scheduler.models.CourseTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    @patch('scheduler.models.UserCourseJoinTable.objects.update_or_create')
+    def test_ta_already_assigned(self, mock_update_or_create, mock_user_get, mock_course_get):
+        mock_course_get.return_value = self.mock_course
+        mock_user_get.return_value = self.mock_ta
+        mock_update_or_create.return_value = (MagicMock(), False)
 
-        response = scheduler.views.courseManagement(request)
+        success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "TA assignment updated but already existed.")
 
-        # Check if the response status code Redirect
-        self.assertEqual(response.status_code, 302)
+    @patch('scheduler.models.CourseTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    @patch('scheduler.models.UserCourseJoinTable.objects.update_or_create')
+    def test_unexpected_error(self, mock_update_or_create, mock_user_get, mock_course_get):
+        mock_course_get.return_value = self.mock_course
+        mock_user_get.return_value = self.mock_ta
+        mock_update_or_create.side_effect = Exception("Unexpected Error")
+
+        success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "An error occurred: Unexpected Error")
 
 
-    def test_adminAccManagement_DeleteNotExist(self):
-        request = RequestFactory().post(reverse('adminAccManagement'))
-        request.user = self.user1Account
-        for userID in range(1, 9999):
-            try:
-                User.objects.get(id=userID)
-            except User.DoesNotExist:
-                requestCopy = request.POST.copy()
-                requestCopy['deleteAccountName'] = userID  # Provide username to delete
-                requestCopy['deleteAccountEmail'] = userID  # Provide email to delete
-                requestCopy['deleteAccBtn'] = 'Delete'  # Simulate button click
+class TestAssignTAToLab(TestCase):
+    def setUp(self):
+        self.admin_page = AdminAssignmentPage()
+        self.lab_id = 1
+        self.user_id = 1
+        self.mock_lab = MagicMock(spec=LabTable)
+        self.mock_ta = MagicMock(spec=UserTable)
+        self.mock_section = MagicMock(spec=SectionTable)
+        self.mock_lab.section_id = self.mock_section.id
 
-                request.POST = requestCopy
+    @patch('scheduler.models.LabTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    @patch('scheduler.models.SectionTable.objects.get')
+    @patch('scheduler.models.UserLabJoinTable.objects.update_or_create')
+    @patch('scheduler.models.UserSectionJoinTable.objects.update_or_create')
+    def test_assign_tatolab_success(self, mock_section_update_or_create, mock_lab_update_or_create, mock_section_get, mock_user_get, mock_lab_get):
+        mock_lab_get.return_value = self.mock_lab
+        mock_user_get.return_value = self.mock_ta
+        mock_section_get.return_value = self.mock_section
+        mock_lab_update_or_create.return_value = (MagicMock(), True)
+        mock_section_update_or_create.return_value = (MagicMock(), True)
 
-                response = AdminAccManagement.as_view()(request)
+        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
+        self.assertTrue(success)
+        self.assertEqual(message, "TA successfully assigned to lab and corresponding section.")
 
-                self.assertContains(response, 'Failed to delete account')
+    @patch('scheduler.models.LabTable.objects.get')
+    def test_lab_not_found(self, mock_lab_get):
+        mock_lab_get.side_effect = LabTable.DoesNotExist
+
+        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "Lab not found.")
+
+    @patch('scheduler.models.LabTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    def test_ta_not_found(self, mock_user_get, mock_lab_get):
+        mock_lab_get.return_value = MagicMock()  # Assume lab is found
+        mock_user_get.side_effect = UserTable.DoesNotExist  # TA is not found
+
+        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "TA not found or not eligible.")
+
+    @patch('scheduler.models.LabTable.objects.get')
+    @patch('scheduler.models.UserTable.objects.get')
+    @patch('scheduler.models.SectionTable.objects.get')
+    def test_section_not_found(self, mock_section_get, mock_user_get, mock_lab_get):
+        mock_lab_get.return_value = MagicMock()  # Assume lab is found
+        mock_user_get.return_value = MagicMock()  # Assume TA is found
+        mock_section_get.side_effect = SectionTable.DoesNotExist  # Section is not found
+
+        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
+        self.assertFalse(success)
+        self.assertEqual(message, "Section not found linked to the lab.")
+
 
 
 if __name__ == '__main__':

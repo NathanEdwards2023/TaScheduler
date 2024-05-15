@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable
+
+from scheduler.models import UserTable, CourseTable, LabTable, SectionTable, UserCourseJoinTable, UserLabJoinTable, \
+    UserSectionJoinTable
 import re
 
 
@@ -143,7 +145,7 @@ class AdminAssignmentPage:
         try:
             # Fetch the course and TA from the database
             course = CourseTable.objects.get(pk=course_id)
-            ta = UserTable.objects.get(pk=user_id, userType='TA')
+            ta = UserTable.objects.get(pk=user_id, userType='ta')
 
             # Using update_or_create to prevent duplicate assignments and handle the operation atomically
             assignment, created = UserCourseJoinTable.objects.update_or_create(
@@ -166,8 +168,40 @@ class AdminAssignmentPage:
             return False, f"An error occurred: {str(e)}"
 
     def assignTAToLab(self, lab_id, user_id):
-        # Assign a TA to a lab
-        pass
+        try:
+            lab = LabTable.objects.get(pk=lab_id)
+            ta = UserTable.objects.get(pk=user_id, userType='ta')
+            section = SectionTable.objects.get(id=lab.section_id)
+
+            if not section:
+                return False, "Section not found. Ensure the lab is linked to a section."
+
+            # Proceed with assignments
+            lab_assignment, lab_created = UserLabJoinTable.objects.update_or_create(
+                labId=lab,
+                userId=ta,
+                defaults={'labId': lab, 'userId': ta}
+            )
+
+            section_assignment, section_created = UserSectionJoinTable.objects.update_or_create(
+                sectionId=section,
+                userId=ta,
+                defaults={'sectionId': section, 'userId': ta}
+            )
+
+            if lab_created or section_created:
+                return True, "TA successfully assigned to lab and corresponding section."
+            return False, "TA assignment to lab and section already existed."
+
+        except LabTable.DoesNotExist:
+            return False, "Lab not found."
+        except UserTable.DoesNotExist:
+            return False, "TA not found or not eligible."
+        except SectionTable.DoesNotExist:
+            return False, "Section not found linked to the lab."
+        except Exception as e:
+            return False, f"An unexpected error occurred: {str(e)}"
+
 
     @staticmethod
     def getRole(email):
@@ -177,17 +211,17 @@ class AdminAssignmentPage:
             return None
 
     @staticmethod
-    def createSection(sectionName, joinTableId):
+    def createSection(sectionName, courseId, time):
         # Create a new course section
         try:
-            joinTable = UserCourseJoinTable.objects.get(id=joinTableId)
-            existingCourseSection = SectionTable.objects.filter(userCourseJoinId__courseId=joinTable.courseId,
-                                                                name=sectionName).first()
+
+            existingCourseSection = SectionTable.objects.filter(name=sectionName, courseId=courseId).exists()
+
             if existingCourseSection:
                 raise ValueError("Section already exists")
             elif sectionName == "":
                 raise ValueError("Invalid course name")
-            SectionTable.objects.create(name=sectionName, userCourseJoinId=joinTable)
+            SectionTable.objects.create(name=sectionName, courseId=courseId, time=time)
             return "Section created successfully"
         except ObjectDoesNotExist:
             return "Failed to create section"
