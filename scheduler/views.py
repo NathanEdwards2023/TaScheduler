@@ -50,28 +50,28 @@ def courseManagement(request):
                               {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                'messages': msg})
 
-          if 'createLabBtn' in request.POST:
-              labSection = request.POST.get('labSection')
-              courseSelect = request.POST.get('courseSelect')
+        if 'createLabBtn' in request.POST:
+            labSection = request.POST.get('labSection')
+            courseSelect = request.POST.get('courseSelect')
 
-                #try:
-                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
-                  #  if success:
-                   #     messages.success(request, message)
-                    #else:
-                     #   messages.error(request, message)
-                #except ValueError as msg:
-                 #   messages.error(request, msg)
-                try:
-                    admin_page.createLabSection(courseSelect, labSection)
-                    return render(request, 'courseManagement.html',
-                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
-                except ValueError as msg:
-                    return render(request, 'courseManagement.html',
-                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': msg})
-        return redirect('courseManagement')
+                    # try:
+                    #   success, message = admin_page.createLabSection(courseSelect, labSection)
+                    #  if success:
+                    #     messages.success(request, message)
+                    # else:
+                    #   messages.error(request, message)
+                    # except ValueError as msg:
+                    #   messages.error(request, msg)
+            try:
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                admin_page.createLabSection(courseSelect, labSection)
+                return render(request, 'courseManagement.html',
+                                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                       'joinEntries': "joinEntries", 'createMessages': "Course successfully created"})
+            except ValueError as msg:
+                return render(request, 'courseManagement.html',
+                                      {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                       'joinEntries': "joinEntries", 'createMessages': msg})
     return render(request, 'courseManagement.html')
 
 
