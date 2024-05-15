@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Profile</title>
-    <link rel="stylesheet" href={% static "css/adminAccManagement.css" %}>
+    <link rel="stylesheet" href={% static "css/profile.css" %}>
 </head>
 <body>
 <!--Navigation Menu-->
@@ -13,7 +13,7 @@
     <nav>
         <ul>
             <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="#">Profile</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
             <li><a href="#">Notifications</a></li>
             <li><a href="{% url 'courseManagement' %}">Course Management</a></li>
             <li><a href="{% url 'adminAccManagement' %}">Account Management</a></li>
@@ -33,13 +33,15 @@
 <main>
     <div class="menuContainer">
         <section>
-            <h2 class="menuTitle">Edit An Account</h2>
+            <h2 class="menuTitle">Edit your account:</h2>
             <div class="menuBox">
                 <form method="post" action="{% url 'adminAccManagement' %}">
                     {% csrf_token %}
-                    <label for="editAccountFirstName">Account Name:</label><br>
+                    <label for="userType">User Type:</label><br>
+                    <span id="userType">{{ user_data.userType }}</span><br>
+                    <label for="editAccountFirstName">First Name:</label><br>
                     <input type="text" id="editAccountFirstName" name="editAccountFirstName" value="{{ user_data.firstName }}"><br>
-                    <label for="editAccountLastName">Account Name:</label><br>
+                    <label for="editAccountLastName">Last Name:</label><br>
                     <input type="text" id="editAccountLastName" name="editAccountLastName" value="{{ user_data.lastName }}"><br>
                     <label for="editAccountEmail">Email:</label><br>
                     <input type="text" id="editAccountEmail" name="editAccountEmail" value="{{ user_data.email }}"><br>
@@ -47,9 +49,7 @@
                     <input type="text" id="editAccountPhoneNumber" name="editAccountPhoneNumber" value="{{ user_data.phone }}"><br>
                     <label for="editAccountAddress">Address:</label><br>
                     <input type="text" id="editAccountAddress" name="editAccountAddress" value="{{ user_data.address }}"><br>
-                    <label for="userType">User Type:</label><br>
-                    <span id="userType">{{ user_data.userType }}</span><br>
-                    <label for="editAccountSkills">Address:</label><br>
+                    <label for="editAccountSkills">User skills:</label><br>
                     <input type="text" id="editAccountSkills" name="editAccountSkills" value="{{ user_data.skills }}"><br>
                     <input type="submit" value="Save Changes">
                 </form>

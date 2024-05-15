@@ -6,16 +6,20 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-
-
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
+
 
 
 @login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
+def profile(request):
+    user = request.user
+    user_data = UserTable.objects.get(email=user.email)
+    return render(request, 'profile.html', {'user_data': user_data})
 
 def courseManagement(request):
     courses = CourseTable.objects.all()
@@ -113,10 +117,11 @@ def courseManagement(request):
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'deleteMessages': msg})
 
-            if'assignTAToLabBtn' in request.POST:
+            if 'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
                 user_id = request.POST.get('userId')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
+
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
                     messages.success(request, message, extra_tags='lab_success')
@@ -127,6 +132,7 @@ def courseManagement(request):
             if 'createLabBtn' in request.POST:
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
+
 
                 #try:
                  #   success, message = admin_page.createLabSection(courseSelect, labSection)
@@ -140,7 +146,8 @@ def courseManagement(request):
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Lab section successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Lab successfully created"})
+
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
@@ -204,4 +211,19 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html',
                                   {'users': users, 'messageCreateAcc': "Account created"})
                 except ValueError as msg:
-                    return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+
+            if 'editAccBtn' in request.POST:
+                user_id = request.POST.get('user_id')
+                email = request.POST.get('email')
+                phone = request.POST.get('phone')
+                address = request.POST.get('address')
+                role = request.POST.get('role')
+                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    adminPage.editAccount(user_id, email, phone, address, role)
+                    return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
+                except ValueError as msg:
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+        return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
+          return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})

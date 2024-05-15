@@ -38,8 +38,12 @@ class AdminAssignmentPage:
         try:
             course = CourseTable.objects.get(id=course_id)
 
+            if courseName == "":
+                raise ValueError("Invalid course name")
+
             if instructorID:
-                course.instructorID = instructorID
+                instructor = UserTable.objects.get(id=instructorID)
+                course.instructorId = instructor.id
 
             if courseName:
                 course.courseName = courseName
@@ -55,24 +59,12 @@ class AdminAssignmentPage:
 
     @staticmethod
     def deleteCourse(courseId):
-        if CourseTable.objects.get(id=courseId).DoesNotExist:
-            return ValueError("Course does not exist")
         try:
             course = CourseTable.objects.get(id=courseId)
-            ucjt = UserCourseJoinTable.objects.filter(courseId=courseId)
-            for ucj in ucjt:
-                sect = SectionTable.objects.filter(userCourseJoinId=ucj)
-                for sec in sect:
-                    labt = LabTable.objects.filter(sectionId=sec)
-                    for lab in labt:
-                        lab.delete()
-                    sec.delete()
-                ucj.delete()
             course.delete()
             return True
         except CourseTable.objects.get(id=courseId).DoesNotExist:
             # Handle the case where the course does not exist
-            # You can render an error message or redirect to an error page
             return ValueError("Course does not exist")
 
     @staticmethod
@@ -80,20 +72,27 @@ class AdminAssignmentPage:
         if sectionNumber == "":
             raise ValueError("Invalid section number")
         try:
-            # Check if the course exists
             course = CourseTable.objects.get(id=courseId)
             # Check if the section already exists for the given course
-            if SectionTable.objects.get(userCourseJoinId=course, name=sectionNumber).exists():
-                raise ValueError("Lab section already exists for this course")
-            # Create the lab section
-            lab_section = SectionTable.objects.create(name=sectionName, userCourseJoinId=course)
-            # Create the lab
-            LabTable.objects.create(sectionNumber=sectionNumber, sectionId=lab_section)
-            return True, "Lab section created successfully"
+            if SectionTable.objects.filter(courseId=course, name=sectionNumber).exists():
+                lab_section = SectionTable.objects.get(courseId=course, name=sectionNumber)
+            else:
+                # Create the lab section
+                lab_section = SectionTable.objects.create(name=sectionNumber, courseId=course)
+                lab_section.save()
+
+            if LabTable.objects.filter(sectionNumber=sectionNumber, section=lab_section).exists():
+                raise ValueError("Lab section already exists")
+            else:
+                # Create the lab
+                lab = LabTable.objects.create(sectionNumber=sectionNumber, section=lab_section)
+                lab.save()
+                print("Lab section:")
+            return True
         except CourseTable.DoesNotExist:
-            return False, "Course does not exist"
+            raise ValueError("Course does not exist")
         except SectionTable.DoesNotExist:
-            return False, "Section does not exist"
+            raise ValueError("Section does not exist")
 
     @staticmethod
     def createAccount(username, email, password):
@@ -120,10 +119,25 @@ class AdminAssignmentPage:
         newUser.save()
         return True
 
-    def editAccount(self, user_id, email, phone, address, role):
-        # Edit an existing user account
-        pass
+    def editAccount(self, email, newEmail, phone, address, role):
+        try:
+            user = UserTable.objects.get(email=email)
 
+            user.email = newEmail
+            user.phone = phone
+            user.address = address
+            user.userType = role
+            user.save()
+
+            account = User.objects.get(email=email)
+            account.email = newEmail
+            account.save()
+
+            return user
+        except UserTable.DoesNotExist:
+            raise ValueError("User account does not exist.")
+        except Exception as e:
+            raise ValueError(str(e))
     # needs to be static
     @staticmethod
     def deleteAccount(usernameID, emailID):
