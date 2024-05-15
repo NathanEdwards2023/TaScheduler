@@ -37,11 +37,16 @@ class SectionTable(models.Model):
     name = models.CharField(max_length=30)
     time = models.CharField(max_length=30, blank=True, null=True)
 
+    courseId = models.ForeignKey(
+        CourseTable,
+        on_delete=models.CASCADE,
+    )
 
 class LabTable(models.Model):
     # Fields
     sectionNumber = models.CharField(max_length=30)
     time = models.CharField(max_length=30, blank=True, null=True)
+    section = models.ForeignKey(SectionTable, on_delete=models.CASCADE)
 
 
 class UserSectionJoinTable(models.Model):
