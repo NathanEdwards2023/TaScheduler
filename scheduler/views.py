@@ -7,7 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
+
 
 
 @login_required(login_url='login')
@@ -26,6 +27,7 @@ def courseManagement(request):
     instructors = UserTable.objects.filter(userType="instructor")
     labs = LabTable.objects.all()
     joinEntries = UserCourseJoinTable.objects.all()
+
 
     if request.method == 'GET':
         user = request.user
@@ -58,11 +60,12 @@ def courseManagement(request):
 
             if 'createSectionBtn' in request.POST:
                 sectionName = request.POST.get('courseSection')
-                joinTable = request.POST.get('userSectionSelect')
+                courseTable = request.POST.get('courseSectionSelect')
+                time = request.POST.get('courseSectionTime')
 
                 # Create a new section object
                 try:
-                    msg = admin_page.createSection(sectionName, joinTable)
+                    msg = admin_page.createSection(sectionName, courseTable, time)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
@@ -101,6 +104,7 @@ def courseManagement(request):
                 lab_id = request.POST.get('labId')
                 user_id = request.POST.get('userId')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
+
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
                     messages.success(request, message, extra_tags='lab_success')
@@ -112,14 +116,15 @@ def courseManagement(request):
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
 
-                # try:
-                #   success, message = admin_page.createLabSection(courseSelect, labSection)
-                #  if success:
-                #     messages.success(request, message)
-                # else:
-                #   messages.error(request, message)
-                # except ValueError as msg:
-                #   messages.error(request, msg)
+
+                #try:
+                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
+                  #  if success:
+                   #     messages.success(request, message)
+                    #else:
+                     #   messages.error(request, message)
+                #except ValueError as msg:
+                 #   messages.error(request, msg)
                 try:
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
@@ -131,6 +136,7 @@ def courseManagement(request):
                                    'joinEntries': joinEntries, 'createMessages': msg})
 
         return redirect('courseManagement')
+
 
 
 def createAccount(request):
@@ -202,3 +208,4 @@ class AdminAccManagement(View):
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
         return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
+          return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})

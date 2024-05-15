@@ -60,11 +60,13 @@
                         {% csrf_token %}
                         <label for="courseSection">Section Name:</label><br>
                         <input type="text" id="courseSection" name="courseSection"><br>
-                        <label for="userSectionSelect">User:</label><br>
-                        <select id="userSectionSelect" name="userSectionSelect">
-                            {% if joinEntries %}
-                                {% for joinEntry in joinEntries %}
-                                    <option value="{{ joinEntry.id }}">{{ joinEntry.userId.firstName}} {{joinEntry.userId.lastName }} - {{joinEntry.courseId.courseName }}</option>
+                        <label for="courseSectionTime">Section Time:</label><br>
+                        <input type="text" id="courseSectionTime" name="courseSectionTime"><br>
+                        <label for="courseSectionSelect">User:</label><br>
+                        <select id="courseSectionSelect" name="courseSectionSelect">
+                            {% if courses %}
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.courseName}}</option>
                                 {% endfor %}
                             {% else %}
                                 <option value="">No course-user entries available</option>
