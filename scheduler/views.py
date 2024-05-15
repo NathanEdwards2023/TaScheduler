@@ -14,6 +14,11 @@ from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable
 def home(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
+def profile(request):
+    user = request.user
+    user_data = UserTable.objects.get(email=user.email)
+    return render(request, 'profile.html', {'user_data': user_data})
 
 def courseManagement(request):
     courses = CourseTable.objects.all()
