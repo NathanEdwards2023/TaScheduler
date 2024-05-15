@@ -69,6 +69,23 @@ def courseManagement(request):
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
+
+            if 'assignBtn' in request.POST:
+                courseId = request.POST.get('courseSelect')
+                insUserid = request.POST.get('instructorSelect')
+
+                # Create a new section object
+                try:
+                    msg = admin_page.assignInstructorToCourse(courseId, insUserid)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'createMessages': "Instructor assigned"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'createMessages': msg})
+
+
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
                 user_id = request.POST.get('userId')  # Note the changed parameter name
@@ -123,7 +140,7 @@ def courseManagement(request):
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Lab section successfully created"})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,

@@ -5,10 +5,10 @@ import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 
-
 from scheduler.views import AdminAccManagement
 
-class MyTestCase(unittest.TestCase):
+
+class AssignInstructorsUnitTest(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         self.user1 = UserTable(firstName="instructor", lastName="instructor", email="insinstructor@uwm.edu",
@@ -36,10 +36,9 @@ class MyTestCase(unittest.TestCase):
     def test_assignIns_correctly(self):
         # Test assigning Instructor with valid data
         self.app.assignInstructorToCourse(self.course1.id, self.user1.id)
-        courseJoin = UserCourseJoinTable.objects.filter(courseId=self.course1.id,userId=self.user1).first()
+        courseJoin = UserCourseJoinTable.objects.filter(courseId=self.course1.id, userId=self.user1).first()
         self.assertIsNotNone(courseJoin)
-        self.assertEqual((courseJoin.sectionId, courseJoin.userId), (self.course1.id, self.user1.id))
-
+        self.assertEqual((courseJoin.courseId, courseJoin.userId), (self.course1, self.user1))
 
     def test_assignIns_UserNotIns(self):
         # Test assigning Instructor with a TA instead of an Instructor
