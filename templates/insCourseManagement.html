@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management</title>
+    <link rel="stylesheet" href={% static "css/courseManagement.css"%}>
+</head>
+<body>
+    <!--Navigation Menu-->
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'profile' %}">Profile</a></li>
+                <li><a href="#">Notifications</a></li>
+                <li><a href="{% url 'insCourseManagement' %}">Course Management</a></li>
+                <li><a href="{% url 'adminAccManagement' %}">Account Management</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="dateContainer">
+            <div class="clock">12:00 PM</div>
+            <span>April 13, 2024</span>
+        </div>
+        <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+    </header>
+
+    <!--Course Management Menu-->
+    <main>
+        <div class="menuContainer">
+            <section>
+                <!--Assign Instructor to Section-->
+                <h2 class="menuTitle">Assign Instructor to Section</h2>
+                <div class="menuBoxMid">
+                    <!--Choose course-->
+                    <form method="post" action="{% url 'insCourseManagement' %}">
+                        {% csrf_token %}
+                        <label for="courseSelectFor">Select Course:</label><br>
+                        <select id="courseSelectFor" name="courseSelect">
+                            {% if userCourseId %}
+                                {% for course in userCourseId %}
+                                    <option value="{{ course.id }}">{{ course.courseName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No courses available</option>
+                            {% endif %}
+                        </select><br>
+                        <input type="submit" name = "courseBtn" value="Submit Course">
+                    </form>
+                <!--Assign Instructor to Section-->
+                    <form method="post" action="{% url 'insCourseManagement' %}">
+                        {% csrf_token %}
+                        <label for="instructorSelectFor">Select Instructor:</label><br>
+                        <select id="instructorSelectFor" name="instructorSelect">
+                            {% if instructors %}
+                                {% for instructor in instructors %}
+                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">First Select Course or No Sections Available</option>
+                            {% endif %}
+                        </select><br><br>
+                        <label for="sectionSelectFor">Select Instructor:</label><br>
+                        <select id="sectionSelectFor" name="sectionSelect">
+                            {% if sections %}
+                                {% for section in sections %}
+                                    <option value="{{ section.id }}">{{ section.name}}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">First Select Course or No Sections Available</option>
+                            {% endif %}
+                        </select><br><br>
+                        <input type="submit" name = "insToSectionBtn" value="Assign Instructor To Section">
+                    </form>
+                    {% if createMessages %}
+                        {{ createMessages }}
+                    {% endif %}
+                </div>
+            </section>
+            <!--view instructors in similar courses-->
+ <section>
+    <h2 class="menuTitle">Instructors In Similar Courses</h2>
+    <div class="menuBoxMid">
+        {% if insSimilarCourses %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Instructor Name</th>
+                        <th>Course</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for insSimilarCourse in insSimilarCourses %}
+                        <tr>
+                            <td>{{ insSimilarCourse.userId.firstName }} {{ insSimilarCourse.userId.lastName }}</td>
+                            <td>{{ insSimilarCourse.courseId.courseName }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No Instructors available</p>
+        {% endif %}
+    </div>
+</section>
+        <!-- TA Skills Section -->
+<section>
+    <h2 class="menuTitle">TA Skills</h2>
+    <div class="menuBoxMid">
+        {% if TAs %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>TA Name</th>
+                        <th>Skills</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ta in TAs %}
+                        <tr>
+                            <td>{{ ta.firstName }} {{ ta.lastName }}</td>
+                            <td>{{ ta.skills }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No TAs available</p>
+        {% endif %}
+    </div>
+</section>
+
+        </div>
+    </main>
+</body>
+</html>

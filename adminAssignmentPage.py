@@ -267,8 +267,27 @@ class AdminAssignmentPage:
                 raise ValueError("Section already exists")
             elif sectionName == "":
                 raise ValueError("Invalid course name")
-            print(sectionName, course, time)
             SectionTable.objects.create(name=sectionName, courseId=course, time=time)
             return "Section created successfully"
         except ObjectDoesNotExist:
             return "Failed to create section"
+
+
+    @staticmethod
+    def assignInsToSection(sectionId, userId):
+        # Create a new course section
+        try:
+            section = SectionTable.objects.filter(id=sectionId).first()
+            user = UserTable.objects.filter(id=userId).first()
+
+            if section is None:
+                raise ValueError("No such section exists")
+            if user is None:
+                raise ValueError("No such user exists")
+            existingInsSection = UserSectionJoinTable.objects.filter(sectionId=section, userId=user).exists()
+            if existingInsSection:
+                raise ValueError("Instructor already assigned to section")
+            UserSectionJoinTable.objects.create(sectionId=section, userId=user)
+            return "Instructor assigned to section"
+        except ObjectDoesNotExist:
+            return "Failed to assign instructor"
