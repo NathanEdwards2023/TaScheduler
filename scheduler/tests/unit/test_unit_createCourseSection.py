@@ -32,8 +32,8 @@ class CreateCourseSectionUnitTest(unittest.TestCase):
     def test_createSection_correctly(self):
         # Test creating a section with valid input
         section_name = "ValidSection"
-        self.app.createSection(section_name, self.course1, "10:30AM")
-        section = SectionTable.objects.filter(name=section_name).first()
+        self.app.createSection(section_name, self.course1.id, "10:30AM")
+        section = SectionTable.objects.filter(name=section_name, courseId=self.course1).first()
 
         self.assertIsNotNone(section)
         self.assertEqual(section.name, section_name)
@@ -46,16 +46,16 @@ class CreateCourseSectionUnitTest(unittest.TestCase):
     def test_createSection_emptySectionName(self):
         # Test creating a section with an empty section name
         with self.assertRaises(ValueError):
-            self.app.createSection("", self.course1, "10:30AM")
+            self.app.createSection("", self.course1.id, "10:30AM")
 
     def test_createSection_duplicateName(self):
         # Test creating a section with a duplicate name within the same course
         section_name = "DuplicateSection"
-        self.app.createSection(section_name, self.course1, "10:30AM")
+        self.app.createSection(section_name, self.course1.id, "10:30AM")
 
         # Attempt to create another section with the same name in the same course
         with self.assertRaises(ValueError):
-            self.app.createSection(section_name, self.course1, "10:30AM")
+            self.app.createSection(section_name, self.course1.id, "10:30AM")
 
 
 if __name__ == '__main__':

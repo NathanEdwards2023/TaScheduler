@@ -24,6 +24,7 @@ def courseManagement(request):
     labs = LabTable.objects.all()
     joinEntries = UserCourseJoinTable.objects.all()
 
+
     if request.method == 'GET':
         user = request.user
         accRole = UserTable.objects.get(email=user.email).userType
@@ -55,11 +56,12 @@ def courseManagement(request):
 
             if 'createSectionBtn' in request.POST:
                 sectionName = request.POST.get('courseSection')
-                joinTable = request.POST.get('userSectionSelect')
+                courseTable = request.POST.get('courseSectionSelect')
+                time = request.POST.get('courseSectionTime')
 
                 # Create a new section object
                 try:
-                    msg = admin_page.createSection(sectionName, joinTable)
+                    msg = admin_page.createSection(sectionName, courseTable, time)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
