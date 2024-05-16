@@ -1,12 +1,16 @@
+import unittest
+
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 
 from adminAssignmentPage import AdminAssignmentPage
+from adminCourseManagement import AdminCourseManagementPage
 from scheduler.models import LabTable, UserTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
+
 
 class TestAssignTAToLab(TestCase):
     def setUp(self):
-        self.admin_page = AdminAssignmentPage()
+        self.admin_page = AdminCourseManagementPage()
         self.lab_id = 1
         self.user_id = 1
         self.mock_lab = MagicMock(spec=LabTable)
@@ -60,6 +64,7 @@ class TestAssignTAToLab(TestCase):
         success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
         self.assertFalse(success)
         self.assertEqual(message, "Section not found linked to the lab.")
+
 
 if __name__ == '__main__':
     unittest.main()

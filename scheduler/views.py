@@ -12,6 +12,7 @@ from adminAccountManagement import AdminAccountManagementPage
 import adminAssignmentPage, adminCourseManagement, adminSectionManagement
 from adminCourseManagement import AdminCourseManagementPage
 from instructorCourseManagement import InstructorCourseManagementPage
+from userManagement import UserManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
     SectionTable
 
@@ -122,8 +123,7 @@ def courseManagement(request):
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
                 user_id = request.POST.get('userId')  # Note the changed parameter name
-                admin_page = adminAssignmentPage.AdminAssignmentPage()
-                success, message = admin_page.assignTAToCourse(course_id, user_id)
+                success, message = AdminCourseManagementPage.assignTAToCourse(course_id, user_id)
 
                 if success:
                     messages.success(request, message, extra_tags='course_assign')
@@ -150,7 +150,7 @@ def courseManagement(request):
                 user_id = request.POST.get('userId')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
 
-                success, message = admin_page.assignTAToLab(lab_id, user_id)
+                success, message = AdminCourseManagementPage.assignTAToLab(lab_id, user_id)
                 if success:
                     messages.success(request, message, extra_tags='lab_assign')
                 else:
@@ -162,7 +162,7 @@ def courseManagement(request):
                 skill = request.POST.get('skillName')
                 admin_page = adminAssignmentPage.AdminAssignmentPage()
 
-                success, message = admin_page.add_skill_to_ta(ta_id, skill)
+                success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
 
                 if success:
                     messages.success(request, message, extra_tags='skill_assign')
