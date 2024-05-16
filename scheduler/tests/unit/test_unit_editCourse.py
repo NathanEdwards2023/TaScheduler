@@ -1,3 +1,4 @@
+
 import unittest
 from django.contrib.auth.models import User
 
@@ -13,13 +14,11 @@ class TestEditCourse(unittest.TestCase):
         self.user1.save()
         self.user1Account = User(username="RoryC", password="password", email=self.user1.email)
         self.user1Account.save()
-
         self.user2 = UserTable(firstName="John", lastName="Doe", email="JDoe@gmail.com", phone="123-456-7890",
                                address="another address", userType="instructor")
         self.user2.save()
         self.user2Account = User(username="John_Doe", password="anonymous", email=self.user2.email)
         self.user2Account.save()
-
         self.course1 = CourseTable(courseName="Computer Science 361", time="MoWeFr 2:00pm-3:00pm")
         self.course1.save()
         join_table = UserCourseJoinTable(courseId=self.course1, userId=self.user1)
@@ -59,3 +58,4 @@ class TestEditCourse(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

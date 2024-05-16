@@ -6,7 +6,6 @@ from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable
 from django.test import TestCase
 
-
 class TestDeleteAccount(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()

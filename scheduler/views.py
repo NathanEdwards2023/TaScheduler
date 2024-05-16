@@ -6,13 +6,13 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
+
 import adminAssignmentPage, adminCourseManagement, adminSectionManagement
 from adminAccountManagment import AdminAccountManagementPage
 from adminCourseManagement import AdminCourseManagementPage
 from instructorCourseManagement import InstructorCourseManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
     SectionTable
-
 
 @login_required(login_url='login')
 def home(request):
@@ -21,11 +21,31 @@ def home(request):
     return render(request, 'home.html', {'userType': userType})
 
 
+
 @login_required(login_url='login')
 def profile(request):
-    user = request.user
-    user_data = UserTable.objects.get(email=user.email)
-    return render(request, 'profile.html', {'user_data': user_data})
+    if request.method == 'GET':
+        user = request.user
+        user_data = UserTable.objects.get(email=user.email)
+        return render(request, 'profile.html', {'user_data': user_data})
+
+    if request.method == 'POST':
+        if 'editProfileButton' in request.POST:
+            old_email = request.POST.get('userEmail')
+            first_name = request.POST.get('editAccountFirstName')
+            last_name = request.POST.get('editAccountLastName')
+            email = request.POST.get('editAccountEmail')
+            phone = request.POST.get('editAccountPhoneNumber')
+            address = request.POST.get('editAccountAddress')
+            skills = request.POST.get('editAccountSkills')
+            profile_page = ProfilePage()
+            try:
+                user = profile_page.editProfile(old_email, first_name, last_name, email, phone, address, skills)
+                return render(request, 'profile.html', {'user_data': user, 'messageEditProfile': "Account edited"})
+            except ValueError as msg:
+                user_data = UserTable.objects.get(email=old_email)
+                return render(request, 'profile.html', {'user_data': user_data, 'messageEditProfile': str(msg)})
+
 
 
 @login_required(login_url='login')
@@ -154,6 +174,7 @@ def courseManagement(request):
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
 
+
                 try:
                     adminSMPage.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
@@ -165,24 +186,25 @@ def courseManagement(request):
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
 
+            if 'editCourseBtn' in request.POST:
+                courseID = request.POST.get("editCourseSelect")
+                courseName = request.POST.get('editCourseName')
+                courseTime = request.POST.get('editTime')
+                instructor = request.POST.get('editInstructorSelect')
+                # Create a new CourseTable object
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                try:
+                    admin_page.editCourse(courseID, courseName, instructor, courseTime)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'messages': "Course successfully created"})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'messages': str(msg)})
+
+
         return redirect('courseManagement')
-
-
-def createAccount(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        adminPage = adminAssignmentPage.AdminAssignmentPage()
-        accountCreated = adminPage.createAccount(username=username, email=email, password=password)
-        if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account created successfully"})
-        else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account failed to be created"})
-
-    return render(request, 'createAccount.html')
 
 
 class AdminAccManagement(View):
