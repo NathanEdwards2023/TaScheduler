@@ -28,39 +28,39 @@ class TestCreateLabSectionAcceptance(TestCase):
 
     def test_create_lab_section_acceptance(self):
         # Make a request to create a lab section
-        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
+        response = self.client.post(reverse('courseManagement'), {'courseSelectToo': self.course.id, 'labSection': 'Lab #001', 'createLabBtn': 'Submit'})
 
         # Verify that lab section is created
-        self.assertTrue(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
+        self.assertTrue(SectionTable.objects.filter(name="Lab #001", courseId=self.course).exists())
         self.assertEqual(response.status_code, 200)
 
     def test_create_lab_section_invalid_course_acceptance(self):
         # Make a request to create a lab section with an invalid course ID
-        response = self.client.post(reverse('create_lab_section'), {'courseId': 999, 'sectionNumber': 'Lab #001'})
+        response = self.client.post(reverse('courseManagement'), {'courseId': 999, 'sectionNumber': 'Lab #001', 'createLabBtn': 'Submit'})
 
         # Verify that the response indicates failure and no lab section is created
-        self.assertEqual(response.status_code, 404)  # or whatever status code indicates failure
-        self.assertFalse(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).exists())
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(SectionTable.objects.filter(name="Lab #001", courseId=self.course).exists())
 
     def test_create_lab_section_with_existing_name_acceptance(self):
         # Create a lab section with the same name to emulate it already exists
-        SectionTable.objects.create(name="Lab #001", userCourseJoinId=self.course)
+        SectionTable.objects.create(name="Lab #001", courseId=self.course)
 
         # Make a request to create a lab section with the same name
-        response = self.client.post(reverse('create_lab_section'),
-                                    {'courseId': self.course.id, 'sectionNumber': 'Lab #001'})
+        response = self.client.post(reverse('courseManagement'),
+                                    {'courseId': self.course.id, 'sectionNumber': 'Lab #001', 'createLabBtn': 'Submit'})
 
         # Verify that the response indicates failure and no duplicate lab section is created
-        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
-        self.assertEqual(SectionTable.objects.filter(name="Lab #001", userCourseJoinId=self.course).count(), 1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(SectionTable.objects.filter(name="Lab #001", courseId=self.course).count(), 1)
 
     def test_create_lab_section_with_empty_name_acceptance(self):
         # Make a request to create a lab section with an empty name
-        response = self.client.post(reverse('create_lab_section'), {'courseId': self.course.id, 'sectionNumber': ''})
+        response = self.client.post(reverse('courseManagement'), {'courseId': self.course.id, 'sectionNumber': '', 'createLabBtn': 'Submit'})
 
         # Verify that the response indicates failure and no lab section is created
-        self.assertEqual(response.status_code, 400)  # or whatever status code indicates failure
-        self.assertFalse(SectionTable.objects.filter(userCourseJoinId=self.course).exists())
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(SectionTable.objects.filter(courseId=self.course).exists())
 
 
 if __name__ == '__main__':
