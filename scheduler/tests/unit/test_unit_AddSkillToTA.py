@@ -1,9 +1,14 @@
+import unittest
+
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
-from scheduler.models import UserTable
-from scheduler.adminAssignmentPage import AdminAssignmentPage
 
-class TestAddSkillToTA(TestCase):
+from adminAssignmentPage import AdminAssignmentPage
+from scheduler.models import UserTable
+from userManagement import UserManagementPage
+
+
+class TestAddSkillToTA(unittest.TestCase):
     def setUp(self):
         # Initialize AdminAssignmentPage for the tests
         self.ta_id = 1
@@ -15,7 +20,7 @@ class TestAddSkillToTA(TestCase):
     def test_add_skill_successfully(self, mock_get):
         mock_get.return_value = self.mock_ta
 
-        success, message = AdminAssignmentPage.add_skill_to_ta(self.ta_id, self.skill)
+        success, message = UserManagementPage.add_skill_to_ta(self.ta_id, self.skill)
 
         self.assertTrue(success)
         self.assertEqual(message, "Skill successfully added.")
@@ -24,7 +29,7 @@ class TestAddSkillToTA(TestCase):
 
     @patch('scheduler.models.UserTable.objects.get')
     def test_add_skill_empty_skill(self, mock_get):
-        success, message = AdminAssignmentPage.add_skill_to_ta(self.ta_id, "")
+        success, message = UserManagementPage.add_skill_to_ta(self.ta_id, "")
 
         self.assertFalse(success)
         self.assertEqual(message, "Skill cannot be empty.")
@@ -35,7 +40,7 @@ class TestAddSkillToTA(TestCase):
         self.mock_ta.skills = "Python"
         mock_get.return_value = self.mock_ta
 
-        success, message = AdminAssignmentPage.add_skill_to_ta(self.ta_id, "Python")
+        success, message = UserManagementPage.add_skill_to_ta(self.ta_id, "Python")
 
         self.assertFalse(success)
         self.assertEqual(message, "This skill is already assigned to the TA.")
@@ -45,7 +50,7 @@ class TestAddSkillToTA(TestCase):
     def test_ta_not_found(self, mock_get):
         mock_get.side_effect = UserTable.DoesNotExist
 
-        success, message = AdminAssignmentPage.add_skill_to_ta(self.ta_id, self.skill)
+        success, message = UserManagementPage.add_skill_to_ta(self.ta_id, self.skill)
 
         self.assertFalse(success)
         self.assertEqual(message, "TA not found or not eligible.")
@@ -54,7 +59,7 @@ class TestAddSkillToTA(TestCase):
     def test_unexpected_error(self, mock_get):
         mock_get.side_effect = Exception("Database error")
 
-        success, message = AdminAssignmentPage.add_skill_to_ta(self.ta_id, self.skill)
+        success, message = UserManagementPage.add_skill_to_ta(self.ta_id, self.skill)
 
         self.assertFalse(success)
         self.assertTrue("An unexpected error occurred" in message)
