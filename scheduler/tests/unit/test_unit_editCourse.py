@@ -1,10 +1,12 @@
-from django.test import TestCase
+
+import unittest
 from django.contrib.auth.models import User
-from scheduler.models import UserTable, CourseTable, UserCourseJoinTable  # Import from the models.py file
-from adminAssignmentPage import AdminAssignmentPage  # Import from the adminAssignmentPage.py file
+
+from adminAssignmentPage import AdminAssignmentPage
+from scheduler.models import UserTable, CourseTable, UserCourseJoinTable
 
 
-class TestEditCourse(TestCase):
+class TestEditCourse(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
         self.user1 = UserTable(firstName="Rory", lastName="Christlieb", email="RC@Sample.com", phone="123-455-5555",
@@ -52,3 +54,8 @@ class TestEditCourse(TestCase):
         editedCourse = CourseTable.objects.get(id=self.course1.id)
         self.assertEqual(editedCourse.courseName, newCourseName)
         self.assertEqual(editedCourse.time, newTime)
+
+
+if __name__ == '__main__':
+    unittest.main()
+

@@ -1,14 +1,11 @@
 import unittest
-from datetime import datetime
 
 from django.contrib.auth.models import User
 
-import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
+from scheduler.models import UserTable
+from django.test import TestCase
 
-
-from scheduler.views import AdminAccManagement
 class TestDeleteAccount(unittest.TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
@@ -62,3 +59,7 @@ class TestDeleteAccount(unittest.TestCase):
         result = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
         result2 = self.app.deleteAccount(self.user1Account.id, self.user1Account.id)
         self.assertEqual("Failed to delete account", result2)
+
+
+if __name__ == '__main__':
+    unittest.main()

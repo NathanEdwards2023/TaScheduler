@@ -7,13 +7,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
-from ProfilePage import ProfilePage
-from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
 
+from ProfilePage import ProfilePage
+from adminAccountManagment import AdminAccountManagementPage
+from adminCourseManagement import AdminCourseManagementPage
+from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
+    SectionTable
 
 @login_required(login_url='login')
 def home(request):
-    return render(request, 'home.html')
+    user = request.user
+    userType = UserTable.objects.get(email=user.email).userType
+    return render(request, 'home.html', {'userType': userType})
+
 
 
 @login_required(login_url='login')
@@ -41,6 +47,8 @@ def profile(request):
                 return render(request, 'profile.html', {'user_data': user_data, 'messageEditProfile': str(msg)})
 
 
+
+@login_required(login_url='login')
 def courseManagement(request):
     courses = CourseTable.objects.all()
     TAs = UserTable.objects.filter(userType="ta")
@@ -92,6 +100,22 @@ def courseManagement(request):
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
+
+            if 'assignBtn' in request.POST:
+                courseId = request.POST.get('courseSelect')
+                insUserid = request.POST.get('instructorSelect')
+
+                # Create a new section object
+                try:
+                    msg = AdminCourseManagementPage.assignInstructorToCourse(courseId, insUserid)
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'assignCourseMsg': msg})
+                except ValueError as msg:
+                    return render(request, 'courseManagement.html',
+                                  {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
+                                   'joinEntries': joinEntries, 'assignCourseMsg': msg})
+
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
                 user_id = request.POST.get('userId')  # Note the changed parameter name
@@ -134,20 +158,20 @@ def courseManagement(request):
             if 'createLabBtn' in request.POST:
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
-
-                #try:
+                # try:
                 #   success, message = admin_page.createLabSection(courseSelect, labSection)
                 #  if success:
                 #     messages.success(request, message)
-                #else:
+                # else:
                 #   messages.error(request, message)
-                #except ValueError as msg:
+                # except ValueError as msg:
                 #   messages.error(request, msg)
                 try:
                     admin_page.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
+                                   'joinEntries': joinEntries, 'createMessages': "Lab successfully created"})
+
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
@@ -169,6 +193,7 @@ def courseManagement(request):
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'messages': str(msg)})
+
 
         return redirect('courseManagement')
 
@@ -196,8 +221,7 @@ class AdminAccManagement(View):
                 #             instructor = request.POST.get('instructorSelect')
                 username = request.POST.get('deleteAccountName')
                 email = request.POST.get('deleteAccountEmail')
-                adminPage = adminAssignmentPage.AdminAssignmentPage()
-                accDeleted = adminPage.deleteAccount(usernameID=username, emailID=email)
+                accDeleted = AdminAccountManagementPage.deleteAccount(usernameID=username, emailID=email)
                 return render(request, 'adminAccManagement.html', {'users': users, 'message': accDeleted})
 
             if 'createAccBtn' in request.POST:
@@ -224,7 +248,64 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
                 except ValueError as msg:
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
-            return render(request, 'adminAccManagement.html', {'users': users})
+        return render(request, 'adminAccManagement.html', {'users': users})
 
-        return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
-        #return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})
+
+class InsCourseManagement(View):
+    @staticmethod
+    @login_required(login_url='login')
+    def get(request):
+        TAs = UserTable.objects.filter(userType="ta")
+        user = request.user
+        userTable = UserTable.objects.get(email=request.user.email)
+        userCourses = UserCourseJoinTable.objects.filter(userId=userTable)
+        userCourseId = [courseId.courseId for courseId in userCourses]
+        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId, userId__userType="instructor")
+
+        if user.is_authenticated and userTable.userType == 'instructor':
+            return render(request, 'insCourseManagement.html',
+                          {'TAs': TAs, 'userCourseId': userCourseId, insSimilarCourses: 'insSimilarCourses'})
+        else:
+
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('home')
+
+    @staticmethod
+    def post(request):
+        TAs = UserTable.objects.filter(userType="ta")
+        userTable = UserTable.objects.get(email=request.user.email)
+        userCourses = UserCourseJoinTable.objects.filter(userId=userTable)
+        userCourseId = [courseId.courseId for courseId in userCourses]
+        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId, userId__userType="instructor")
+
+        if request.method == 'POST':
+            if 'courseBtn' in request.POST:
+                courseId = request.POST.get('courseSelect')
+                try:
+                    course = CourseTable.objects.get(id=courseId)
+                    otherInstructors = UserCourseJoinTable.objects.filter(courseId=course,
+                                                                          userId__userType='instructor')
+                    sections = SectionTable.objects.filter(courseId=course)
+
+                    return render(request, 'insCourseManagement.html',
+                                  {'TAs': TAs, 'userCourseId': userCourseId, insSimilarCourses: 'insSimilarCourses',
+                                   'instructors': otherInstructors, 'sections': sections,
+                                   'createMessages': "Course Selected"})
+                except ValueError as msg:
+                    return render(request, 'insCourseManagement.html',
+                                  {'TAs': TAs, 'userCourseId': userCourseId, insSimilarCourses: 'insSimilarCourses',
+                                   'createMessages': msg})
+            elif 'insToSectionBtn' in request.POST:
+                instructorId = request.POST.get('instructorSelect')
+                sectionId = request.POST.get('sectionSelect')
+                try:
+                    adminPage = adminAssignmentPage.AdminAssignmentPage()
+                    msg = adminPage.assignInsToSection(sectionId, instructorId)
+                    return render(request, 'insCourseManagement.html',
+                                  {'TAs': TAs, 'userCourseId': userCourseId, 'createMessages': msg})
+                except ValueError as msg:
+                    return render(request, 'insCourseManagement.html', {'TAs': TAs, 'userCourseId': userCourseId,
+                                                                        'createMessages': msg,
+                                                                        insSimilarCourses: 'insSimilarCourses'})
+
+        return render(request, 'insCourseManagement.html', {'TAs': TAs, 'userCourseId': userCourseId})
