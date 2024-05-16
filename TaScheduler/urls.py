@@ -21,7 +21,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
 
-from scheduler.views import AdminAccManagement
+from scheduler.views import AdminAccManagement, courseManagement, profile, InsCourseManagement
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,4 +31,6 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('courseManagement/', views.courseManagement, name='courseManagement'),
     path('adminAccManagement/', AdminAccManagement.as_view(), name='adminAccManagement'),
+    path('profile/', views.profile, name='profile'),
+    path('insCourseManagement/', InsCourseManagement.as_view(), name='insCourseManagement'),
 ]
