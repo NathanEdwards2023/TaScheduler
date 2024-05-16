@@ -113,27 +113,18 @@ class AdminAssignmentPage:
         newUser.save()
         return True
 
-    def editAccount(self, old_email, first_name, last_name, email, phone, address, skills):
+    def editAccount(self, email, newEmail, phone, address, role):
         try:
-            user = UserTable.objects.get(email=old_email)
+            user = UserTable.objects.get(email=email)
 
-            if email != old_email:
-                # Check if the new email is already in use
-                if UserTable.objects.filter(email=email).exclude(email=old_email).exists():
-                    raise ValueError("New email is already in use by another user.")
-
-            # Update user attributes
-            user.firstName = first_name
-            user.lastName = last_name
-            user.email = email
+            user.email = newEmail
             user.phone = phone
             user.address = address
-            user.skills = skills
+            user.userType = role
             user.save()
 
-            # Also update the associated User model email if changed
-            account = User.objects.get(email=old_email)
-            account.email = email
+            account = User.objects.get(email=email)
+            account.email = newEmail
             account.save()
 
             return user

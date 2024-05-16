@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage
+from ProfilePage import ProfilePage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable
 
 
@@ -17,9 +18,27 @@ def home(request):
 
 @login_required(login_url='login')
 def profile(request):
-    user = request.user
-    user_data = UserTable.objects.get(email=user.email)
-    return render(request, 'profile.html', {'user_data': user_data})
+    if request.method == 'GET':
+        user = request.user
+        user_data = UserTable.objects.get(email=user.email)
+        return render(request, 'profile.html', {'user_data': user_data})
+
+    if request.method == 'POST':
+        if 'editProfileButton' in request.POST:
+            old_email = request.POST.get('userEmail')
+            first_name = request.POST.get('editAccountFirstName')
+            last_name = request.POST.get('editAccountLastName')
+            email = request.POST.get('editAccountEmail')
+            phone = request.POST.get('editAccountPhoneNumber')
+            address = request.POST.get('editAccountAddress')
+            skills = request.POST.get('editAccountSkills')
+            profile_page = ProfilePage()
+            try:
+                user = profile_page.editProfile(old_email, first_name, last_name, email, phone, address, skills)
+                return render(request, 'profile.html', {'user_data': user, 'messageEditProfile': "Account edited"})
+            except ValueError as msg:
+                user_data = UserTable.objects.get(email=old_email)
+                return render(request, 'profile.html', {'user_data': user_data, 'messageEditProfile': str(msg)})
 
 
 def courseManagement(request):
@@ -154,23 +173,6 @@ def courseManagement(request):
         return redirect('courseManagement')
 
 
-def createAccount(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        adminPage = adminAssignmentPage.AdminAssignmentPage()
-        accountCreated = adminPage.createAccount(username=username, email=email, password=password)
-        if accountCreated:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account created successfully"})
-        else:
-            return render(request, 'createAccount.html', {'username': username, 'email': email, 'password': password,
-                                                          'messages': "Account failed to be created"})
-
-    return render(request, 'createAccount.html')
-
-
 class AdminAccManagement(View):
     @staticmethod
     @login_required(login_url='login')
@@ -211,19 +213,18 @@ class AdminAccManagement(View):
                     return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
 
             if 'editAccBtn' in request.POST:
-                old_email = request.POST.get('userEmail')
-                first_name = request.POST.get('editAccountFirstName')
-                last_name = request.POST.get('editAccountLastName')
-                email = request.POST.get('editAccountEmail')
-                phone = request.POST.get('editAccountPhoneNumber')
-                address = request.POST.get('editAccountAddress')
-                skills = request.POST.get('editAccountSkills')
+                user_id = request.POST.get('user_id')
+                email = request.POST.get('email')
+                phone = request.POST.get('phone')
+                address = request.POST.get('address')
+                role = request.POST.get('role')
                 adminPage = adminAssignmentPage.AdminAssignmentPage()
                 try:
-                    adminPage.editAccount(old_email, first_name, last_name, email, phone, address, skills)
+                    adminPage.editAccount(user_id, email, phone, address, role)
                     return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
                 except ValueError as msg:
-                    return render(request, 'adminAccManagement.html', {'messageEditAcc': msg})
+                    return render(request, 'adminAccManagement.html', {'messageCreateAcc': msg})
+            return render(request, 'adminAccManagement.html', {'users': users})
 
         return render(request, 'adminAccManagement.html', {'users': User.objects.all()})
         #return render(request, 'adminAccManagement.html', {'users': users, 'messageCreateAcc': msg})

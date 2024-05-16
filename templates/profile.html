@@ -53,9 +53,21 @@
                     <input type="text" id="editAccountAddress" name="editAccountAddress" value="{{ user_data.address }}"><br>
                     <label for="editAccountSkills">User skills:</label><br>
                     <input type="text" id="editAccountSkills" name="editAccountSkills" value="{{ user_data.skills }}"><br>
-                    <input type="submit" value="Save Changes">
+                    <input type="submit" name="editProfileButton" value="Save changes">
                 </form>
             </div>
+            {% if messageEditProfile %}
+                <div class="profileEditedMessage">
+                    <span class="closeProfileEditedBtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                    <p>{{ messageEditProfile }}</p>
+                </div>
+            {% endif %}
+
+            <script>
+                function closeMessage() {
+                    document.querySelector('.messageEditProfile').style.display = 'none';
+                }
+            </script>
         </section>
     </div>
 </main>

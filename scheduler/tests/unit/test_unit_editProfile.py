@@ -1,12 +1,15 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+
+from ProfilePage import ProfilePage
 from scheduler.models import UserTable, CourseTable, UserCourseJoinTable  # Import from the models.py file
 from adminAssignmentPage import AdminAssignmentPage  # Import from the adminAssignmentPage.py file
 
 
-class TestEditAccount(TestCase):
+class TestEditProfile(TestCase):
     def setUp(self):
         self.app = AdminAssignmentPage()
+        self.profile = ProfilePage()
         self.user1 = UserTable(firstName="John", lastName="Doe", email="email@gmail.com", phone="262-724-8212",
                                address="some address", skills="Python, Java", userType="instructor")
         self.user1.save()
@@ -25,7 +28,7 @@ class TestEditAccount(TestCase):
         self.user2Account.delete()
 
     def test_editAccount(self):
-        new_user = self.app.editAccount(self.user1.email, "John", "Doe", "newemail@uwm.com", "1234567890", "123 street", "Java, Python")
+        new_user = self.profile.editProfile(self.user1.email, "John", "Doe", "newemail@uwm.com", "1234567890", "123 street", "Java, Python")
         self.assertEqual(new_user.firstName, "John")
         self.assertEqual(new_user.lastName, "Doe")
         self.assertEqual(new_user.email, "newemail@uwm.com")
@@ -34,9 +37,10 @@ class TestEditAccount(TestCase):
         self.assertEqual(new_user.skills, "Java, Python")
 
     def test_editMissingAccount(self):
-        self.assertRaises(ValueError, self.app.editAccount, 999, "John", "Doe", "newemail@uwm.com", "1234567890", "123 street", "Java, Python")
+        with self.assertRaises(ValueError) as context:
+            self.profile.editProfile("", "John", "Doe", "newemail@uwm.com", "1234567890", "123 street", "Java, Python")
 
     def test_editAccountEmailInUse(self):
         with self.assertRaises(ValueError) as context:
-            self.app.editAccount(self.user1.email, "John", "Doe", self.user2.email, "1234567890", "123 street", "Java, Python")
+            self.profile.editProfile(self.user1.email, "John", "Doe", self.user2.email, "1234567890", "123 street", "Java, Python")
 
