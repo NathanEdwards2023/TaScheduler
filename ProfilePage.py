@@ -13,23 +13,23 @@ class ProfilePage:
         # Display admin assignment details
         pass
 
-    def editProfile(self, old_email, first_name, last_name, email, phone, address, skills):
+    def editProfile(self, old_email, first_name, last_name, new_email, phone, address, skills):
         try:
             user = UserTable.objects.get(email=old_email)
             pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 
-            if not re.match(pattern, email):
+            if not re.match(pattern, new_email):
                 raise ValueError("Invalid email format")
 
-            if email != old_email:
+            if new_email != old_email:
                 # Check if the new email is already in use
-                if UserTable.objects.filter(email=email).exclude(email=old_email).exists():
+                if UserTable.objects.filter(email=new_email).exclude(email=old_email).exists():
                     raise ValueError("New email is already in use by another user.")
 
             # Update user attributes
             user.firstName = first_name
             user.lastName = last_name
-            user.email = email
+            user.email = new_email
             user.phone = phone
             user.address = address
             user.skills = skills
@@ -37,7 +37,7 @@ class ProfilePage:
 
             # Also update the associated User model email if changed
             account = User.objects.get(email=old_email)
-            account.email = email
+            account.email = new_email
             account.save()
 
             return user

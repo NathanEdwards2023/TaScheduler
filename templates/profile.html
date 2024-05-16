@@ -35,10 +35,9 @@
         <section>
             <h2 class="menuTitle">Edit your account:</h2>
             <div class="menuBox">
-                <form method="post" action="{% url 'adminAccManagement' %}">
+                <form method="post" action="{% url 'profile' %}">
                     {% csrf_token %}
-                    <label for="userEmail">Current Email:</label><br>
-                    <span id="userEmail">{{ user_data.email }}</span><br>
+                    <input type="hidden" id="userEmail" name="userEmail" value="{{ user_data.email }}">
                     <label for="userType">User Type:</label><br>
                     <span id="userType">{{ user_data.userType }}</span><br>
                     <label for="editAccountFirstName">First Name:</label><br>
@@ -53,7 +52,7 @@
                     <input type="text" id="editAccountAddress" name="editAccountAddress" value="{{ user_data.address }}"><br>
                     <label for="editAccountSkills">User skills:</label><br>
                     <input type="text" id="editAccountSkills" name="editAccountSkills" value="{{ user_data.skills }}"><br>
-                    <input type="submit" name="editProfileButton" value="Save changes">
+                    <input type="submit" name="editProfileButton" value="Edit Profile">
                 </form>
             </div>
             {% if messageEditProfile %}

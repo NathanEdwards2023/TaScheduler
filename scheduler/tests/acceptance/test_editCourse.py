@@ -6,12 +6,12 @@ from django.urls import reverse
 import scheduler.views
 from scheduler.models import UserTable, CourseTable
 from scheduler.views import AdminAccManagement
-from adminAssignmentPage import AdminAssignmentPage
+from adminCourseManagement import AdminCourseManagementPage
 
 
 class TestEditCourseAcceptance(TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = AdminCourseManagementPage()
         self.user1 = UserTable(firstName="Rory", lastName="Christlieb", email="RoCh@gmail.com", phone="123-455-5555",
                                address="some address", userType="admin")
         self.user1.save()

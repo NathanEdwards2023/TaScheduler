@@ -1,12 +1,36 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from scheduler.models import CourseTable, UserTable, UserCourseJoinTable, SectionTable, UserSectionJoinTable, LabTable, UserLabJoinTable
+from scheduler.models import CourseTable, UserTable, UserCourseJoinTable, LabTable, SectionTable, UserLabJoinTable, \
+    UserSectionJoinTable
 
 
 class AdminCourseManagementPage:
     def __init__(self):
         pass
+
+    @staticmethod
+    def editCourse(course_id, courseName, instructorID, time):
+        try:
+            course = CourseTable.objects.get(id=course_id)
+
+            if courseName == "":
+                raise ValueError("Invalid course name")
+
+            if instructorID:
+                instructor = UserTable.objects.get(id=instructorID)
+                course.instructorId = instructor.id
+
+            if courseName:
+                course.courseName = courseName
+
+            if time:
+                course.time = time
+
+            course.save()
+            return True
+
+        except CourseTable.DoesNotExist:
+            raise ValueError("Course does not exist")
 
     @staticmethod
     def createCourse(courseName, instructorId):
@@ -35,7 +59,7 @@ class AdminCourseManagementPage:
         except CourseTable.objects.get(id=courseId).DoesNotExist:
             # Handle the case where the course does not exist
             return ValueError("Course does not exist")
-          
+
     @staticmethod
     def assignInstructorToCourse(courseId, userId):
         try:
