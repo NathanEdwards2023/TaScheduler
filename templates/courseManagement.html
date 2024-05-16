@@ -275,7 +275,20 @@
     <h2 class="menuTitle">TA Skills</h2>
     <div class="menuBoxMid">
         {% if TAs %}
-            <table border="1">
+            <form method="post" action="{% url 'courseManagement' %}">
+                {% csrf_token %}
+                <label for="taId">TA:</label>
+                <select name="taId" id="taId" required>
+                    <option value="">Select a TA</option>
+                    {% for ta in TAs %}
+                        <option value="{{ ta.id }}">{{ ta.firstName }} {{ ta.lastName }}</option>
+                    {% endfor %}
+                </select>
+                <label for="skillName">Skill:</label>
+                <input type="text" id="skillName" name="skillName" placeholder="Enter skill" required>
+                <input type="submit" name="addSkillBtn" value="Assign Skill" class="submit-btn">
+            </form>
+            <table border="1" style="margin-top: 20px;">
                 <thead>
                     <tr>
                         <th>TA Name</th>
@@ -294,6 +307,15 @@
         {% else %}
             <p>No TAs available</p>
         {% endif %}
+        <div class="messages">
+            {% for message in messages %}
+                {% if 'skill_assign' in message.tags %}
+                    <div class="{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
 </section>
 
