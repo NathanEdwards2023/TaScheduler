@@ -102,9 +102,9 @@ def courseManagement(request):
                 success, message = admin_page.assignTAToCourse(course_id, user_id)
 
                 if success:
-                    messages.success(request, message)
+                    messages.success(request, message, extra_tags='course_assign')
                 else:
-                    messages.error(request, message)
+                    messages.error(request, message, extra_tags='course_assign')
 
             if 'deleteBtn' in request.POST:
                 courseId = request.POST.get('sectionSelect')
@@ -129,9 +129,23 @@ def courseManagement(request):
 
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
-                    messages.success(request, message, extra_tags='lab_success')
+                    messages.success(request, message, extra_tags='lab_assign')
                 else:
-                    messages.error(request, message, extra_tags='lab_error')
+                    messages.error(request, message, extra_tags='lab_assign')
+                return redirect('courseManagement')
+
+            if 'addSkillBtn' in request.POST:
+                ta_id = request.POST.get('taId')
+                skill = request.POST.get('skillName')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+
+                success, message = admin_page.add_skill_to_ta(ta_id, skill)
+
+                if success:
+                    messages.success(request, message, extra_tags='skill_assign')
+                else:
+                    messages.error(request, message, extra_tags='skill_assign')
+
                 return redirect('courseManagement')
 
             if 'createLabBtn' in request.POST:
