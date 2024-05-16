@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 
-import adminAssignmentPage, adminCourseManagement, adminSectionManagement
+import adminCourseManagement, adminSectionManagement
 from adminAccountManagment import AdminAccountManagementPage
 from adminCourseManagement import AdminCourseManagementPage
 from instructorCourseManagement import InstructorCourseManagementPage
@@ -70,7 +70,6 @@ def courseManagement(request):
 
     else:
         if request.method == 'POST':
-            admin_page = adminAssignmentPage.AdminAssignmentPage()
             adminCMPage = adminCourseManagement.AdminCourseManagementPage()
             adminSMPage = adminSectionManagement.AdminSectionManagementPage()
 
@@ -147,7 +146,6 @@ def courseManagement(request):
             if 'assignTAToLabBtn' in request.POST:
                 lab_id = request.POST.get('labId')
                 user_id = request.POST.get('userId')
-                admin_page = adminAssignmentPage.AdminAssignmentPage()
 
                 success, message = AdminCourseManagementPage.assignTAToLab(lab_id, user_id)
                 if success:
@@ -159,7 +157,6 @@ def courseManagement(request):
             if 'addSkillBtn' in request.POST:
                 ta_id = request.POST.get('taId')
                 skill = request.POST.get('skillName')
-                admin_page = adminAssignmentPage.AdminAssignmentPage()
 
                 success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
 
