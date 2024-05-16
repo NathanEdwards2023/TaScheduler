@@ -1,70 +1,66 @@
-import unittest
-from unittest.mock import MagicMock, patch
-
-from django.test import TestCase, RequestFactory
-from django.contrib.auth.models import User
-from django.urls import reverse
-from adminAssignmentPage import AdminAssignmentPage
-from scheduler.models import UserTable, LabTable, SectionTable
 from django.test import TestCase
+from django.urls import reverse
+from scheduler.models import UserTable, LabTable, SectionTable, UserLabJoinTable
+from django.contrib.auth.models import User
 
 
-class TestAssignTAToLab(TestCase):
+class AssignTAToLabTests(TestCase):
     def setUp(self):
-        self.admin_page = AdminAssignmentPage()
-        self.lab_id = 1
-        self.user_id = 1
-        self.mock_lab = MagicMock(spec=LabTable)
-        self.mock_ta = MagicMock(spec=UserTable)
-        self.mock_section = MagicMock(spec=SectionTable)
-        self.mock_lab.section_id = self.mock_section.id
+        self.user = User.objects.create_user(username='admin', password='adminpass', email='admin@example.com')
+        self.client.login(username='admin', password='adminpass')
+        self.section = SectionTable.objects.create(name="Section 101")
+        self.lab = LabTable.objects.create(sectionNumber="Lab 01", section=self.section)
+        self.ta = UserTable.objects.create(firstName="John", lastName="Doe", email="ta@example.com", userType='ta')
+        self.instructor = UserTable.objects.create(firstName="Alice", lastName="Smith", email="instructor@example.com",
+                                                   userType='instructor')
 
-    @patch('scheduler.models.LabTable.objects.get')
-    @patch('scheduler.models.UserTable.objects.get')
-    @patch('scheduler.models.SectionTable.objects.get')
-    @patch('scheduler.models.UserLabJoinTable.objects.update_or_create')
-    @patch('scheduler.models.UserSectionJoinTable.objects.update_or_create')
-    def test_assign_tatolab_success(self, mock_section_update_or_create, mock_lab_update_or_create, mock_section_get,
-                                    mock_user_get, mock_lab_get):
-        mock_lab_get.return_value = self.mock_lab
-        mock_user_get.return_value = self.mock_ta
-        mock_section_get.return_value = self.mock_section
-        mock_lab_update_or_create.return_value = (MagicMock(), True)
-        mock_section_update_or_create.return_value = (MagicMock(), True)
+    def test_assign_ta_to_lab_success(self):
+        response = self.client.post(reverse('courseManagement'), {
+            'labId': self.lab.id,
+            'userId': self.ta.id,
+            'assignTAToLabBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(UserLabJoinTable.objects.filter(labId=self.lab, userId=self.ta).exists())
 
-        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
-        self.assertTrue(success)
-        self.assertEqual(message, "TA successfully assigned to lab and corresponding section.")
+    def test_assign_nonexistent_ta_to_lab(self):
+        response = self.client.post(reverse('courseManagement'), {
+            'labId': self.lab.id,
+            'userId': 999,  # Non-existent user ID
+            'assignTAToLabBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserLabJoinTable.objects.filter(labId=self.lab, userId=999).exists())
 
-    @patch('scheduler.models.LabTable.objects.get')
-    def test_lab_not_found(self, mock_lab_get):
-        mock_lab_get.side_effect = LabTable.DoesNotExist
+    def test_assign_ta_to_nonexistent_lab(self):
+        response = self.client.post(reverse('courseManagement'), {
+            'labId': 999,  # Non-existent lab ID
+            'userId': self.ta.id,
+            'assignTAToLabBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserLabJoinTable.objects.filter(labId=999, userId=self.ta).exists())
 
-        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
-        self.assertFalse(success)
-        self.assertEqual(message, "Lab not found.")
+    def test_assign_non_ta_user_to_lab(self):
+        response = self.client.post(reverse('courseManagement'), {
+            'labId': self.lab.id,
+            'userId': self.instructor.id,
+            'assignTAToLabBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserLabJoinTable.objects.filter(labId=self.lab, userId=self.instructor).exists())
 
-    @patch('scheduler.models.LabTable.objects.get')
-    @patch('scheduler.models.UserTable.objects.get')
-    def test_ta_not_found(self, mock_user_get, mock_lab_get):
-        mock_lab_get.return_value = MagicMock()  # Assume lab is found
-        mock_user_get.side_effect = UserTable.DoesNotExist  # TA is not found
-
-        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
-        self.assertFalse(success)
-        self.assertEqual(message, "TA not found or not eligible.")
-
-    @patch('scheduler.models.LabTable.objects.get')
-    @patch('scheduler.models.UserTable.objects.get')
-    @patch('scheduler.models.SectionTable.objects.get')
-    def test_section_not_found(self, mock_section_get, mock_user_get, mock_lab_get):
-        mock_lab_get.return_value = MagicMock()  # Assume lab is found
-        mock_user_get.return_value = MagicMock()  # Assume TA is found
-        mock_section_get.side_effect = SectionTable.DoesNotExist  # Section is not found
-
-        success, message = self.admin_page.assignTAToLab(self.lab_id, self.user_id)
-        self.assertFalse(success)
-        self.assertEqual(message, "Section not found linked to the lab.")
+    def test_assign_ta_to_lab_with_no_section(self):
+        # Assuming labs must be linked to sections
+        lab_without_section = LabTable.objects.create(sectionNumber="Lab 02", section=None)
+        response = self.client.post(reverse('courseManagement'), {
+            'labId': lab_without_section.id,
+            'userId': self.ta.id,
+            'assignTAToLabBtn': 'Submit'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("", response.content.decode())
+        self.assertFalse(UserLabJoinTable.objects.filter(labId=lab_without_section, userId=self.ta).exists())
 
 
 if __name__ == '__main__':
