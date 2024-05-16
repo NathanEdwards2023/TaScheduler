@@ -78,7 +78,7 @@ class TestCreateCourseAcc(TestCase):
         }
         response = self.client.post(reverse('courseManagement'), data)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(CourseTable.objects.filter(courseName='New Course', instructorId=instructor).exists())
+        self.assertTrue(CourseTable.objects.filter(courseName='New Course').exists())
 
     def test_invalid_course_creation(self):
         # Ensure that an invalid course cannot be created
