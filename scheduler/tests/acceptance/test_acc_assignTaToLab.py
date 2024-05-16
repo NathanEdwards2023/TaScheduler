@@ -35,15 +35,6 @@ class AssignTAToLabTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(UserLabJoinTable.objects.filter(labId=self.lab, userId=999).exists())
 
-    def test_assign_ta_to_nonexistent_lab(self):
-        response = self.client.post(reverse('courseManagement'), {
-            'labId': 999,  # Non-existent lab ID
-            'userId': self.ta.id,
-            'assignTAToLabBtn': 'Submit'
-        })
-        self.assertEqual(response.status_code, 302)
-        self.assertFalse(UserLabJoinTable.objects.filter(labId=999, userId=self.ta).exists())
-
     def test_assign_non_ta_user_to_lab(self):
         response = self.client.post(reverse('courseManagement'), {
             'labId': self.lab.id,

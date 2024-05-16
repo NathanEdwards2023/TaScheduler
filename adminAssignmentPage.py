@@ -136,38 +136,3 @@ class AdminAssignmentPage:
             raise ValueError("User account does not exist.")
         except Exception as e:
             raise ValueError(str(e))
-
-    def assignTAToLab(self, lab_id, user_id):
-        try:
-            lab = LabTable.objects.get(pk=lab_id)
-            ta = UserTable.objects.get(pk=user_id, userType='ta')
-            section = SectionTable.objects.get(id=lab.section_id)
-
-            if not section:
-                return False, "Section not found. Ensure the lab is linked to a section."
-
-            # Proceed with assignments
-            lab_assignment, lab_created = UserLabJoinTable.objects.update_or_create(
-                labId=lab,
-                userId=ta,
-                defaults={'labId': lab, 'userId': ta}
-            )
-
-            section_assignment, section_created = UserSectionJoinTable.objects.update_or_create(
-                sectionId=section,
-                userId=ta,
-                defaults={'sectionId': section, 'userId': ta}
-            )
-
-            if lab_created or section_created:
-                return True, "TA successfully assigned to lab and corresponding section."
-            return False, "TA assignment to lab and section already existed."
-
-        except LabTable.DoesNotExist:
-            return False, "Lab not found."
-        except UserTable.DoesNotExist:
-            return False, "TA not found or not eligible."
-        except SectionTable.DoesNotExist:
-            return False, "Section not found linked to the lab."
-        except Exception as e:
-            return False, f"An unexpected error occurred: {str(e)}"
