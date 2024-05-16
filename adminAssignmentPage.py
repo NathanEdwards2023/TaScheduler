@@ -165,6 +165,7 @@ class AdminAssignmentPage:
     @staticmethod
     def assignInstructorToCourse(courseId, userId):
         try:
+            print(courseId, userId)
             courseExist = CourseTable.objects.filter(id=courseId).exists()
             if courseExist:
                 course = CourseTable.objects.filter(id=courseId).first()
@@ -181,11 +182,11 @@ class AdminAssignmentPage:
 
             existingUserCourse = UserCourseJoinTable.objects.filter(courseId=course, userId=user).exists()
             if existingUserCourse:
-                print("Course assignment already exists")
                 raise ValueError("Course assignment already exists")
             UserCourseJoinTable.objects.create(courseId=course, userId=user)
             return "Section created successfully"
         except ObjectDoesNotExist:
+            print("failed")
             return "Failed to create section"
 
     def assignTAToCourse(self, course_id, user_id):

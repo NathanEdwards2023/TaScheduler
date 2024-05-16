@@ -59,7 +59,7 @@
                         <select id="instructorSelectFor" name="instructorSelect">
                             {% if instructors %}
                                 {% for instructor in instructors %}
-                                    <option value="{{ instructor.id }}">{{ instructor.firstName}} {{instructor.lastName }}</option>
+                                    <option value="{{ instructor.id }}">{{ instructor.userId.firstName}} {{instructor.userId.lastName }}</option>
                                 {% endfor %}
                             {% else %}
                                 <option value="">First Select Course or No Sections Available</option>
@@ -83,57 +83,57 @@
                 </div>
             </section>
             <!--view instructors in similar courses-->
- <section>
-    <h2 class="menuTitle">Instructors In Similar Courses</h2>
-    <div class="menuBoxMid">
-        {% if insSimilarCourses %}
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Instructor Name</th>
-                        <th>Course</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for insSimilarCourse in insSimilarCourses %}
-                        <tr>
-                            <td>{{ insSimilarCourse.userId.firstName }} {{ insSimilarCourse.userId.lastName }}</td>
-                            <td>{{ insSimilarCourse.courseId.courseName }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No Instructors available</p>
-        {% endif %}
-    </div>
-</section>
-        <!-- TA Skills Section -->
-<section>
-    <h2 class="menuTitle">TA Skills</h2>
-    <div class="menuBoxMid">
-        {% if TAs %}
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>TA Name</th>
-                        <th>Skills</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ta in TAs %}
-                        <tr>
-                            <td>{{ ta.firstName }} {{ ta.lastName }}</td>
-                            <td>{{ ta.skills }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No TAs available</p>
-        {% endif %}
-    </div>
-</section>
+             <section>
+                <h2 class="menuTitle">Instructors In Similar Courses</h2>
+                <div class="menuBoxMid">
+                    {% if insSimilarCourses %}
+                        <table border="1">
+                            <thead>
+                                <tr>
+                                    <th>Instructor Name</th>
+                                    <th>Course</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for insSimilarCourse in insSimilarCourses %}
+                                    <tr>
+                                        <td>{{ insSimilarCourse.userId.firstName }} {{ insSimilarCourse.userId.lastName }}</td>
+                                        <td>{{ insSimilarCourse.courseId.courseName }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No Instructors available</p>
+                    {% endif %}
+                </div>
+            </section>
+                    <!-- TA Skills Section -->
+            <section>
+                <h2 class="menuTitle">TA Skills</h2>
+                <div class="menuBoxMid">
+                    {% if TAs %}
+                        <table border="1">
+                            <thead>
+                                <tr>
+                                    <th>TA Name</th>
+                                    <th>Skills</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ta in TAs %}
+                                    <tr>
+                                        <td>{{ ta.firstName }} {{ ta.lastName }}</td>
+                                        <td>{{ ta.skills }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No TAs available</p>
+                    {% endif %}
+                </div>
+            </section>
 
         </div>
     </main>

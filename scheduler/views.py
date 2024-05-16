@@ -87,12 +87,11 @@ def courseManagement(request):
                     msg = admin_page.assignInstructorToCourse(courseId, insUserid)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': "Instructor assigned"})
+                                   'joinEntries': joinEntries, 'assignCourseMsg': msg})
                 except ValueError as msg:
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
-                                   'joinEntries': joinEntries, 'createMessages': msg})
-
+                                   'joinEntries': joinEntries, 'assignCourseMsg': msg})
 
             if 'assignTAToCourseBtn' in request.POST:
                 course_id = request.POST.get('courseId')
@@ -235,12 +234,11 @@ class InsCourseManagement(View):
     @login_required(login_url='login')
     def get(request):
         TAs = UserTable.objects.filter(userType="ta")
-
         user = request.user
         userTable = UserTable.objects.get(email=request.user.email)
         userCourses = UserCourseJoinTable.objects.filter(userId=userTable)
         userCourseId = [courseId.courseId for courseId in userCourses]
-        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId)
+        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId, userId__userType="instructor")
 
         if user.is_authenticated and userTable.userType == 'instructor':
             return render(request, 'insCourseManagement.html',
@@ -256,18 +254,25 @@ class InsCourseManagement(View):
         userTable = UserTable.objects.get(email=request.user.email)
         userCourses = UserCourseJoinTable.objects.filter(userId=userTable)
         userCourseId = [courseId.courseId for courseId in userCourses]
-        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId)
+        insSimilarCourses = UserCourseJoinTable.objects.filter(courseId__in=userCourseId, userId__userType="instructor")
 
         if request.method == 'POST':
             if 'courseBtn' in request.POST:
                 courseId = request.POST.get('courseSelect')
-                course = CourseTable.objects.get(id=courseId)
-                otherInstructors = UserCourseJoinTable.objects.filter(courseId__in=course,
-                                                                      userType='instructor')
-                sections = SectionTable.objects.filter(courseId=course)
+                try:
+                    course = CourseTable.objects.get(id=courseId)
+                    otherInstructors = UserCourseJoinTable.objects.filter(courseId=course,
+                                                                          userId__userType='instructor')
+                    sections = SectionTable.objects.filter(courseId=course)
 
-                return render(request, 'insCourseManagement.html',
-                              {'instructors': otherInstructors, 'sections': sections})
+                    return render(request, 'insCourseManagement.html',
+                                  {'TAs': TAs, 'userCourseId': userCourseId, insSimilarCourses: 'insSimilarCourses',
+                                   'instructors': otherInstructors, 'sections': sections,
+                                   'createMessages': "Course Selected"})
+                except ValueError as msg:
+                    return render(request, 'insCourseManagement.html',
+                                  {'TAs': TAs, 'userCourseId': userCourseId, insSimilarCourses: 'insSimilarCourses',
+                                   'createMessages': msg})
             elif 'insToSectionBtn' in request.POST:
                 instructorId = request.POST.get('instructorSelect')
                 sectionId = request.POST.get('sectionSelect')

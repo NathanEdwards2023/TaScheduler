@@ -149,7 +149,8 @@
                 <!--Assign Instructor to Course-->
                 <h2 class="menuTitle">Assign Instructor to Course</h2>
                 <div class="menuBoxMid">
-                    <form>
+                    <form method="post" action="{% url 'courseManagement' %}">
+                        {% csrf_token %}
                         <label for="courseSelectFor">Select Course:</label><br>
                         <select id="courseSelectFor" name="courseSelect">
                             {% if courses %}
@@ -173,6 +174,9 @@
                         <input type="submit" name = "assignBtn" value="Assign">
                     </form>
                 </div>
+                {% if assignCourseMsg %}
+                        {{ assignCourseMsg }}
+                {% endif %}
             </section>
             <!--Course editing and deletion-->
             <section>
