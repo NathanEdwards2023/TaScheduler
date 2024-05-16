@@ -9,6 +9,7 @@ from django.contrib import messages
 import adminAssignmentPage
 from adminAccountManagment import AdminAccountManagementPage
 from adminCourseManagement import AdminCourseManagementPage
+from instructorCourseManagement import InstructorCourseManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
     SectionTable
 
@@ -279,7 +280,7 @@ class InsCourseManagement(View):
                 sectionId = request.POST.get('sectionSelect')
                 try:
                     adminPage = adminAssignmentPage.AdminAssignmentPage()
-                    msg = adminPage.assignInsToSection(sectionId, instructorId)
+                    msg = InstructorCourseManagementPage.assignInsToSection(sectionId, instructorId)
                     return render(request, 'insCourseManagement.html',
                                   {'TAs': TAs, 'userCourseId': userCourseId, 'createMessages': msg})
                 except ValueError as msg:
