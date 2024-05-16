@@ -10,7 +10,7 @@ from django.contrib import messages
 import adminAccountManagement, adminSectionManagement
 from ProfilePage import ProfilePage
 from adminAccountManagement import AdminAccountManagementPage
-import adminAssignmentPage, adminCourseManagement, adminSectionManagement
+import adminCourseManagement, adminSectionManagement
 from adminCourseManagement import AdminCourseManagementPage
 from instructorCourseManagement import InstructorCourseManagementPage
 from userManagement import UserManagementPage
@@ -156,19 +156,6 @@ def courseManagement(request):
                     messages.error(request, message, extra_tags='lab_assign')
                 return redirect('courseManagement')
 
-            if 'addSkillBtn' in request.POST:
-                ta_id = request.POST.get('taId')
-                skill = request.POST.get('skillName')
-
-                success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
-
-                if success:
-                    messages.success(request, message, extra_tags='skill_assign')
-                else:
-                    messages.error(request, message, extra_tags='skill_assign')
-
-                return redirect('courseManagement')
-
             if 'createLabBtn' in request.POST:
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
@@ -205,6 +192,34 @@ def courseManagement(request):
 
         return redirect('courseManagement')
 
+class TACourseManagement(View):
+    @staticmethod
+    @login_required(login_url='login')
+    def get(request):
+        TAs = UserTable.objects.filter(userType="ta")
+        user = request.user
+        userTable = UserTable.objects.get(email=request.user.email)
+        if user.is_authenticated and userTable.userType == 'ta':
+            return render(request, 'taCourseManagement.html',
+                          {'TAs': TAs})
+        else:
+
+            # Redirect non-admin users to another page (e.g., home page)
+            return redirect('home')
+
+    def post(self, request):
+        if 'addSkillBtn' in request.POST:
+            ta_id = request.POST.get('taId')
+            skill = request.POST.get('skillName')
+
+            success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
+
+            if success:
+                messages.success(request, message, extra_tags='skill_assign')
+            else:
+                messages.error(request, message, extra_tags='skill_assign')
+
+            return redirect('taCourseManagement')
 
 class AdminAccManagement(View):
     @staticmethod
