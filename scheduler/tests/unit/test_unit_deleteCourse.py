@@ -23,20 +23,20 @@ class TestDeleteCourse(unittest.TestCase):
         self.course = CourseTable.objects.create(courseName="Test Course")
 
         # Create users
-        self.user1 = UserTable.objects.create(email="user01@example.com")
-        self.user2 = UserTable.objects.create(email="user02@example.com")
+        self.user1 = UserTable.objects.create(email="testuser01@example.com")
+        self.user2 = UserTable.objects.create(email="testuser02@example.com")
 
         # Create user-course associations
         self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)
         self.user_course2 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user2)
 
         # Create sections associated with the course
-        self.section1 = SectionTable.objects.create(name="Section 1", userCourseJoinId=self.user_course1)
-        self.section2 = SectionTable.objects.create(name="Section 2", userCourseJoinId=self.user_course2)
+        self.section1 = SectionTable.objects.create(name="Section 1", courseId=self.course)
+        self.section2 = SectionTable.objects.create(name="Section 2", courseId=self.course)
 
         # Create lab sections associated with the course
-        self.lab1 = LabTable.objects.create(sectionNumber="Lab 001", sectionId=self.section1)
-        self.lab2 = LabTable.objects.create(sectionNumber="Lab 002", sectionId=self.section2)
+        self.lab1 = LabTable.objects.create(sectionNumber="Lab 001", section=self.section1)
+        self.lab2 = LabTable.objects.create(sectionNumber="Lab 002", section=self.section2)
 
     def tearDown(self):
         # Clean up after each test by deleting created objects
@@ -49,7 +49,7 @@ class TestDeleteCourse(unittest.TestCase):
         self.user2.delete()
 
     def test_delete_course_success(self):
-        result = self.admin_page.deleteCourse(id=self.course.id)
+        result = self.admin_page.deleteCourse(self.course.id)
         self.assertTrue(result)
 
         # Verify that course and associated objects are deleted
