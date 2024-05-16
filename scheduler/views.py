@@ -94,7 +94,7 @@ def courseManagement(request):
 
                 # Create a new section object
                 try:
-                    msg = admin_page.createSection(sectionName, courseTable, time)
+                    msg = adminSectionManagement.AdminSectionManagementPage.createSection(sectionName, courseTable, time)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
