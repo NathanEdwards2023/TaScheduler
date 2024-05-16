@@ -1,14 +1,14 @@
-
+from django.test import TestCase
 import unittest
 from django.contrib.auth.models import User
 
-from adminAssignmentPage import AdminAssignmentPage
+from adminCourseManagement import AdminCourseManagementPage
 from scheduler.models import UserTable, CourseTable, UserCourseJoinTable
 
 
-class TestEditCourse(unittest.TestCase):
+class TestEditCourse(TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = AdminCourseManagementPage()
         self.user1 = UserTable(firstName="Rory", lastName="Christlieb", email="RC@Sample.com", phone="123-455-5555",
                                address="some address", userType="instructor")
         self.user1.save()

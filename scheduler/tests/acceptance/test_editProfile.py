@@ -6,13 +6,11 @@ from django.contrib.auth.models import User
 
 from ProfilePage import ProfilePage
 from scheduler.views import profile, AdminAccManagement
-from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable
 
 
 class TestEditAccountProfileAcceptance(TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
         self.profile = ProfilePage()
         self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
                                phone="adminTest",

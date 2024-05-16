@@ -3,12 +3,10 @@ from django.contrib.auth.models import User
 
 from ProfilePage import ProfilePage
 from scheduler.models import UserTable, CourseTable, UserCourseJoinTable  # Import from the models.py file
-from adminAssignmentPage import AdminAssignmentPage  # Import from the adminAssignmentPage.py file
 
 
 class TestEditProfile(TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
         self.profile = ProfilePage()
         self.user1 = UserTable(firstName="John", lastName="Doe", email="email@gmail.com", phone="262-724-8212",
                                address="some address", skills="Python, Java", userType="instructor")

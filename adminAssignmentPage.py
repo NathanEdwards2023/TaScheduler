@@ -33,30 +33,6 @@ class AdminAssignmentPage:
             return True
 
     @staticmethod
-    def editCourse(course_id, courseName, instructorID, time):
-        try:
-            course = CourseTable.objects.get(id=course_id)
-
-            if courseName == "":
-                raise ValueError("Invalid course name")
-
-            if instructorID:
-                instructor = UserTable.objects.get(id=instructorID)
-                course.instructorId = instructor.id
-
-            if courseName:
-                course.courseName = courseName
-
-            if time:
-                course.time = time
-
-            course.save()
-            return True
-
-        except CourseTable.DoesNotExist:
-            raise ValueError("Course does not exist")
-
-    @staticmethod
     def deleteCourse(courseId):
         try:
             course = CourseTable.objects.get(id=courseId)
@@ -91,51 +67,6 @@ class AdminAssignmentPage:
             raise ValueError("Course does not exist")
         except SectionTable.DoesNotExist:
             raise ValueError("Section does not exist")
-
-    @staticmethod
-    def createAccount(username, email, password):
-        pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-
-        if username == '' or email == '' or password == '':
-            raise ValueError("All fields need to be filled out")
-
-        if not re.match(pattern, email):
-            raise ValueError("Invalid email format")
-
-        if len(password) < 8:
-            raise ValueError("Password must be at least 8 characters long")
-
-        try:
-            existing_email = User.objects.get(email=email)
-            raise ValueError("User already exists")
-        except User.DoesNotExist:
-            pass
-
-        newAccount = User.objects.create_user(username=username, email=email, password=password)
-        newUser = UserTable(email=email)
-        newAccount.save()
-        newUser.save()
-        return True
-
-    def editAccount(self, email, newEmail, phone, address, role):
-        try:
-            user = UserTable.objects.get(email=email)
-
-            user.email = newEmail
-            user.phone = phone
-            user.address = address
-            user.userType = role
-            user.save()
-
-            account = User.objects.get(email=email)
-            account.email = newEmail
-            account.save()
-
-            return user
-        except UserTable.DoesNotExist:
-            raise ValueError("User account does not exist.")
-        except Exception as e:
-            raise ValueError(str(e))
 
     def assignTAToCourse(self, course_id, user_id):
         try:

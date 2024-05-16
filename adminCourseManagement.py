@@ -8,6 +8,30 @@ class AdminCourseManagementPage:
         pass
 
     @staticmethod
+    def editCourse(course_id, courseName, instructorID, time):
+        try:
+            course = CourseTable.objects.get(id=course_id)
+
+            if courseName == "":
+                raise ValueError("Invalid course name")
+
+            if instructorID:
+                instructor = UserTable.objects.get(id=instructorID)
+                course.instructorId = instructor.id
+
+            if courseName:
+                course.courseName = courseName
+
+            if time:
+                course.time = time
+
+            course.save()
+            return True
+
+        except CourseTable.DoesNotExist:
+            raise ValueError("Course does not exist")
+
+    @staticmethod
     def assignInstructorToCourse(courseId, userId):
         try:
             courseExist = CourseTable.objects.filter(id=courseId).exists()
