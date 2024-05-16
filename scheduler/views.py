@@ -11,6 +11,7 @@ from ProfilePage import ProfilePage
 from adminAccountManagement import AdminAccountManagementPage
 import adminAssignmentPage, adminCourseManagement, adminSectionManagement
 from adminCourseManagement import AdminCourseManagementPage
+from instructorCourseManagement import InstructorCourseManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
     SectionTable
 
@@ -94,7 +95,7 @@ def courseManagement(request):
 
                 # Create a new section object
                 try:
-                    msg = admin_page.createSection(sectionName, courseTable, time)
+                    msg = adminSectionManagement.AdminSectionManagementPage.createSection(sectionName, courseTable, time)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': msg})
@@ -125,9 +126,9 @@ def courseManagement(request):
                 success, message = admin_page.assignTAToCourse(course_id, user_id)
 
                 if success:
-                    messages.success(request, message)
+                    messages.success(request, message, extra_tags='course_assign')
                 else:
-                    messages.error(request, message)
+                    messages.error(request, message, extra_tags='course_assign')
 
             if 'deleteBtn' in request.POST:
                 courseId = request.POST.get('sectionSelect')
@@ -151,9 +152,23 @@ def courseManagement(request):
 
                 success, message = admin_page.assignTAToLab(lab_id, user_id)
                 if success:
-                    messages.success(request, message, extra_tags='lab_success')
+                    messages.success(request, message, extra_tags='lab_assign')
                 else:
-                    messages.error(request, message, extra_tags='lab_error')
+                    messages.error(request, message, extra_tags='lab_assign')
+                return redirect('courseManagement')
+
+            if 'addSkillBtn' in request.POST:
+                ta_id = request.POST.get('taId')
+                skill = request.POST.get('skillName')
+                admin_page = adminAssignmentPage.AdminAssignmentPage()
+
+                success, message = admin_page.add_skill_to_ta(ta_id, skill)
+
+                if success:
+                    messages.success(request, message, extra_tags='skill_assign')
+                else:
+                    messages.error(request, message, extra_tags='skill_assign')
+
                 return redirect('courseManagement')
 
             if 'createLabBtn' in request.POST:
@@ -295,7 +310,7 @@ class InsCourseManagement(View):
                 sectionId = request.POST.get('sectionSelect')
                 try:
                     adminPage = adminAssignmentPage.AdminAssignmentPage()
-                    msg = adminPage.assignInsToSection(sectionId, instructorId)
+                    msg = InstructorCourseManagementPage.assignInsToSection(sectionId, instructorId)
                     return render(request, 'insCourseManagement.html',
                                   {'TAs': TAs, 'userCourseId': userCourseId, 'createMessages': msg})
                 except ValueError as msg:

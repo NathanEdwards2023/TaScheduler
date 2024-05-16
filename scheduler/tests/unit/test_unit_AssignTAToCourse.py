@@ -1,7 +1,9 @@
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
+
+from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import CourseTable, UserTable, UserCourseJoinTable
-from scheduler.adminAssignmentPage import AdminAssignmentPage
+
 
 class AssignTAToCourseTestCase(TestCase):
     def setUp(self):
@@ -64,6 +66,7 @@ class AssignTAToCourseTestCase(TestCase):
         success, message = self.admin_page.assignTAToCourse(self.course_id, self.user_id)
         self.assertFalse(success)
         self.assertEqual(message, "An error occurred: Unexpected Error")
+
 
 if __name__ == '__main__':
     unittest.main()
