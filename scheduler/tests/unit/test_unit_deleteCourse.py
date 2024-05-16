@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 import scheduler.views
-from adminAssignmentPage import AdminAssignmentPage
+import adminCourseManagement
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -17,14 +17,14 @@ from scheduler.views import AdminAccManagement
 
 class TestDeleteCourse(unittest.TestCase):
     def setUp(self):
-        self.admin_page = AdminAssignmentPage()
+        self.admin_page = adminCourseManagement.AdminCourseManagementPage()
 
         # Create a course
         self.course = CourseTable.objects.create(courseName="Test Course")
 
         # Create users
-        self.user1 = UserTable.objects.create(email="testuser01@example.com")
-        self.user2 = UserTable.objects.create(email="testuser02@example.com")
+        self.user1 = UserTable.objects.create(email="testuser001@example.com")
+        self.user2 = UserTable.objects.create(email="testuser002@example.com")
 
         # Create user-course associations
         self.user_course1 = UserCourseJoinTable.objects.create(courseId=self.course, userId=self.user1)

@@ -1,6 +1,10 @@
+import unittest
+
 from django.test import TestCase
+
+from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable
-from scheduler.adminAssignmentPage import AdminAssignmentPage
+from userManagement import UserManagementPage
 
 
 class AddSkillToTATests(TestCase):
@@ -18,7 +22,7 @@ class AddSkillToTATests(TestCase):
         # Test adding a new skill successfully
         ta_id = self.ta.id
         skill = "Python"
-        success, message = AdminAssignmentPage.add_skill_to_ta(ta_id, skill)
+        success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
         self.assertTrue(success)
         self.assertEqual(message, "Skill successfully added.")
 
@@ -30,7 +34,7 @@ class AddSkillToTATests(TestCase):
         # Test adding an empty skill
         ta_id = self.ta.id
         skill = ""
-        success, message = AdminAssignmentPage.add_skill_to_ta(ta_id, skill)
+        success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
         self.assertFalse(success)
         self.assertEqual(message, "Skill cannot be empty.")
 
@@ -38,10 +42,10 @@ class AddSkillToTATests(TestCase):
         # Add a skill first
         ta_id = self.ta.id
         skill = "Python"
-        AdminAssignmentPage.add_skill_to_ta(ta_id, skill)
+        UserManagementPage.add_skill_to_ta(ta_id, skill)
 
         # Try adding the same skill again
-        success, message = AdminAssignmentPage.add_skill_to_ta(ta_id, skill)
+        success, message = UserManagementPage.add_skill_to_ta(ta_id, skill)
         self.assertFalse(success)
         self.assertEqual(message, "This skill is already assigned to the TA.")
 
@@ -49,7 +53,7 @@ class AddSkillToTATests(TestCase):
         # Try adding a skill to a non-existing TA
         non_existent_ta_id = self.ta.id + 999
         skill = "Python"
-        success, message = AdminAssignmentPage.add_skill_to_ta(non_existent_ta_id, skill)
+        success, message = UserManagementPage.add_skill_to_ta(non_existent_ta_id, skill)
         self.assertFalse(success)
         self.assertEqual(message, "TA not found or not eligible.")
 

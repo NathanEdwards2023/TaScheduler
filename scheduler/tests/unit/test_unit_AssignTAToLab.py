@@ -1,7 +1,8 @@
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
+
+from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import LabTable, UserTable, SectionTable, UserLabJoinTable, UserSectionJoinTable
-from scheduler.adminAssignmentPage import AdminAssignmentPage
 
 class TestAssignTAToLab(TestCase):
     def setUp(self):
