@@ -1,13 +1,16 @@
+import unittest
+
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 
 from adminAssignmentPage import AdminAssignmentPage
+from adminCourseManagement import AdminCourseManagementPage
 from scheduler.models import CourseTable, UserTable, UserCourseJoinTable
 
 
 class AssignTAToCourseTestCase(TestCase):
     def setUp(self):
-        self.admin_page = AdminAssignmentPage()
+        self.admin_page = AdminCourseManagementPage()
         self.course_id = 1
         self.user_id = 2
         self.mock_course = MagicMock(spec=CourseTable)

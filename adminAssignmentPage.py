@@ -137,33 +137,6 @@ class AdminAssignmentPage:
         except Exception as e:
             raise ValueError(str(e))
 
-
-    def assignTAToCourse(self, course_id, user_id):
-        try:
-            # Fetch the course and TA from the database
-            course = CourseTable.objects.get(pk=course_id)
-            ta = UserTable.objects.get(pk=user_id, userType='ta')
-
-            # Using update_or_create to prevent duplicate assignments and handle the operation atomically
-            assignment, created = UserCourseJoinTable.objects.update_or_create(
-                courseId=course,
-                userId=ta,
-            )
-
-            if created:
-                return True, "TA successfully assigned to course."
-            else:
-                return False, "TA assignment updated but already existed."
-
-        except CourseTable.DoesNotExist:
-            return False, "Course not found."
-        except UserTable.DoesNotExist:
-            return False, "TA not found or not eligible."
-        except MultipleObjectsReturned:
-            return False, "Multiple entries found where only one expected. Data integrity error."
-        except Exception as e:
-            return False, f"An error occurred: {str(e)}"
-
     def assignTAToLab(self, lab_id, user_id):
         try:
             lab = LabTable.objects.get(pk=lab_id)
