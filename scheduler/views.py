@@ -6,7 +6,7 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-import adminAssignmentPage
+import adminAssignmentPage, adminCourseManagement, adminSectionManagement
 from adminAccountManagment import AdminAccountManagementPage
 from adminCourseManagement import AdminCourseManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
@@ -49,13 +49,15 @@ def courseManagement(request):
     else:
         if request.method == 'POST':
             admin_page = adminAssignmentPage.AdminAssignmentPage()
+            adminCMPage = adminCourseManagement.AdminCourseManagementPage()
+            adminSMPage = adminSectionManagement.AdminSectionManagementPage()
 
             if 'createCourseBtn' in request.POST:
                 courseName = request.POST.get('courseName')
                 instructor = request.POST.get('instructorSelect')
                 # Create a new CourseTable object
                 try:
-                    admin_page.createCourse(courseName, instructor)
+                    adminCMPage.createCourse(courseName, instructor)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': "Course successfully created"})
@@ -108,9 +110,8 @@ def courseManagement(request):
 
             if 'deleteBtn' in request.POST:
                 courseId = request.POST.get('sectionSelect')
-                admin_page = adminAssignmentPage.AdminAssignmentPage()
                 try:
-                    admin_page.deleteCourse(courseId)
+                    adminCMPage.deleteCourse(courseId)
                     courses = CourseTable.objects.all()
                     labs = LabTable.objects.all()
                     joinEntries = UserCourseJoinTable.objects.all()
@@ -138,16 +139,8 @@ def courseManagement(request):
                 labSection = request.POST.get('labSection')
                 courseSelect = request.POST.get('courseSelect')
 
-                # try:
-                #   success, message = admin_page.createLabSection(courseSelect, labSection)
-                #  if success:
-                #     messages.success(request, message)
-                # else:
-                #   messages.error(request, message)
-                # except ValueError as msg:
-                #   messages.error(request, msg)
                 try:
-                    admin_page.createLabSection(courseSelect, labSection)
+                    adminSMPage.createLabSection(courseSelect, labSection)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'createMessages': "Lab successfully created"})
