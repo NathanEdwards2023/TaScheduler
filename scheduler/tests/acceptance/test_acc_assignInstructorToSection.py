@@ -10,7 +10,6 @@ from django.urls import reverse
 from scheduler.views import InsCourseManagement
 
 
-
 class TestAssignInstructorToSection(TestCase):
     def __init__(self, methodName: str = "runTest"):
         super().__init__(methodName)
