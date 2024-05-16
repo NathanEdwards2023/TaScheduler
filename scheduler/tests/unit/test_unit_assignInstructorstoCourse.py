@@ -2,7 +2,6 @@ import unittest
 from datetime import datetime
 
 import scheduler.views
-from adminAssignmentPage import AdminAssignmentPage
 from adminCourseManagement import AdminCourseManagementPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 

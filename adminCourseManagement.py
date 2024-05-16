@@ -1,6 +1,7 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from scheduler.models import CourseTable, UserTable, UserCourseJoinTable
+from scheduler.models import CourseTable, UserTable, UserCourseJoinTable, LabTable, SectionTable, UserLabJoinTable, \
+    UserSectionJoinTable
 
 
 class AdminCourseManagementPage:
