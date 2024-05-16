@@ -13,3 +13,30 @@ class UserManagementPage:
             return UserTable.objects.get(email=email).userType
         except ObjectDoesNotExist:
             return None
+
+    @staticmethod
+    def add_skill_to_ta(ta_id, skill):
+        if not skill:
+            return False, "Skill cannot be empty."
+
+        try:
+            # Retrieve the TA based on ID
+            ta = UserTable.objects.get(pk=ta_id, userType='ta')
+
+            # Check if the skill already exists
+            if skill.lower() in (existing_skill.lower() for existing_skill in ta.skills.split(',')):
+                return False, "This skill is already assigned to the TA."
+
+            # Add the new skill
+            if ta.skills:
+                ta.skills += f", {skill}"
+            else:
+                ta.skills = skill
+            ta.save()
+
+            return True, "Skill successfully added."
+
+        except UserTable.DoesNotExist:
+            return False, "TA not found or not eligible."
+        except Exception as e:
+            return False, f"An unexpected error occurred: {str(e)}"
