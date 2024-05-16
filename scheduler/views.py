@@ -6,9 +6,10 @@ from pip._vendor.requests.models import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-
+import adminAccountManagement
+from ProfilePage import ProfilePage
+from adminAccountManagement import AdminAccountManagementPage
 import adminAssignmentPage, adminCourseManagement, adminSectionManagement
-from adminAccountManagment import AdminAccountManagementPage
 from adminCourseManagement import AdminCourseManagementPage
 from instructorCourseManagement import InstructorCourseManagementPage
 from userManagement import UserManagementPage
@@ -192,7 +193,7 @@ def courseManagement(request):
                 courseTime = request.POST.get('editTime')
                 instructor = request.POST.get('editInstructorSelect')
                 # Create a new CourseTable object
-                admin_page = adminAssignmentPage.AdminAssignmentPage()
+                admin_page = adminCourseManagement.AdminCourseManagementPage()
                 try:
                     admin_page.editCourse(courseID, courseName, instructor, courseTime)
                     return render(request, 'courseManagement.html',
@@ -237,7 +238,7 @@ class AdminAccManagement(View):
                 username = request.POST.get('createAccountName')
                 email = request.POST.get('createAccountEmail')
                 password = request.POST.get('createAccountPassword')
-                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                adminPage = adminAccountManagement.AdminAccountManagementPage()
                 try:
                     adminPage.createAccount(username=username, email=email, password=password)
                     return render(request, 'adminAccManagement.html',
@@ -251,7 +252,7 @@ class AdminAccManagement(View):
                 phone = request.POST.get('phone')
                 address = request.POST.get('address')
                 role = request.POST.get('role')
-                adminPage = adminAssignmentPage.AdminAssignmentPage()
+                adminPage = adminAccountManagement
                 try:
                     adminPage.editAccount(user_id, email, phone, address, role)
                     return render(request, 'adminAccManagement.html', {'messageEditAcc': "Account edited"})
