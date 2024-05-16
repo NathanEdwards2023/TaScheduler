@@ -3,6 +3,7 @@ from datetime import datetime
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
+from instructorCourseManagement import InstructorCourseManagementPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable, UserSectionJoinTable
 
 from scheduler.views import AdminAccManagement
@@ -10,7 +11,7 @@ from scheduler.views import AdminAccManagement
 
 class AssignInstructorsToSectionUnitTest(unittest.TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = InstructorCourseManagementPage()
         self.user1 = UserTable(firstName="instructor", lastName="instructor", email="insinstructor2@uwm.edu",
                                phone="262-555-5555",
                                address="some address", userType="instructor")

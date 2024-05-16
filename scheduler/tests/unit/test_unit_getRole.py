@@ -1,11 +1,12 @@
 import unittest
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable
+from userManagement import UserManagementPage
 
 
 class TestGetRole(unittest.TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = UserManagementPage()
         # Create a test user for each test case
         self.ins = UserTable(firstName="Matt", lastName="Matt", email="insTest@gmail.com", phone="262-555-5555",
                              address="Some address", userType="instructor")

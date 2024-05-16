@@ -6,6 +6,7 @@ from django.db import IntegrityError
 
 import scheduler.views
 from adminAssignmentPage import AdminAssignmentPage
+from adminSectionManagement import AdminSectionManagementPage
 from scheduler.models import UserTable, CourseTable, LabTable, UserCourseJoinTable, SectionTable
 
 from scheduler.views import AdminAccManagement
@@ -13,7 +14,7 @@ from scheduler.views import AdminAccManagement
 
 class CreateCourseSectionUnitTest(unittest.TestCase):
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = AdminSectionManagementPage()
         self.user1 = UserTable(firstName="matt", lastName="matt", email="mattNew9@gmail.com", phone="262-555-5555",
                                address="some address", userType="instructor")
         self.user1.save()

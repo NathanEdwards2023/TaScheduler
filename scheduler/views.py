@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 import adminAssignmentPage, adminCourseManagement, adminSectionManagement
+from adminAccountManagment import AdminAccountManagementPage
+from adminCourseManagement import AdminCourseManagementPage
 from .models import CourseTable, UserTable, LabTable, UserCourseJoinTable, UserLabJoinTable, UserSectionJoinTable, \
     SectionTable
 
@@ -86,7 +88,7 @@ def courseManagement(request):
 
                 # Create a new section object
                 try:
-                    msg = admin_page.assignInstructorToCourse(courseId, insUserid)
+                    msg = AdminCourseManagementPage.assignInstructorToCourse(courseId, insUserid)
                     return render(request, 'courseManagement.html',
                                   {'courses': courses, 'TAs': TAs, 'instructors': instructors, 'labs': labs,
                                    'joinEntries': joinEntries, 'assignCourseMsg': msg})
@@ -191,8 +193,7 @@ class AdminAccManagement(View):
                 #             instructor = request.POST.get('instructorSelect')
                 username = request.POST.get('deleteAccountName')
                 email = request.POST.get('deleteAccountEmail')
-                adminPage = adminAssignmentPage.AdminAssignmentPage()
-                accDeleted = adminPage.deleteAccount(usernameID=username, emailID=email)
+                accDeleted = AdminAccountManagementPage.deleteAccount(usernameID=username, emailID=email)
                 return render(request, 'adminAccManagement.html', {'users': users, 'message': accDeleted})
 
             if 'createAccBtn' in request.POST:

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User
 
+from adminAccountManagment import AdminAccountManagementPage
 from adminAssignmentPage import AdminAssignmentPage
 from scheduler.models import UserTable
 from django.test import TestCase
@@ -18,7 +19,7 @@ class TestDeleteAccountACCEPTANCE(TestCase):
         self.client = None
 
     def setUp(self):
-        self.app = AdminAssignmentPage()
+        self.app = AdminAccountManagementPage()
         self.user1 = UserTable(firstName="adminTest", lastName="adminTest", email="adminTest@gmail.com",
                                phone="adminTest",
                                address="adminTest", userType="admin")
